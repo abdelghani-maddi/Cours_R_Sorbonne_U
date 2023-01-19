@@ -1,2 +1,6 @@
 # Cours_R_Sorbonne_U
-Jeux de données et scripts R
+L'objet de ce répertoire est de donner accès aux jeux de données et scripts R des cours M2 Chargé(e) d'études sociiologiques de Sorbonne université.
+Le cours reprend la série de webinaires animés par Joseph Larmarange (IRD) et réalisés en partenariat avec Ceped et l'écode HED. Pour plus d'informations, voir : https://larmarange.github.io/webin-R/
+
+
+
