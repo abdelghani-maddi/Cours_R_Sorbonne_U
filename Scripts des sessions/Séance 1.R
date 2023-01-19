@@ -227,6 +227,7 @@ sexe[c(1, 3, 4)] <- c("Homme", "Homme", "Homme")
 sexe[c(1, 3, 4)] <- "Homme"
 
 #### LISTES ET TABLEAUX DE DONNEES
+<<<<<<< HEAD
  # LES LISTES :
     # Par nature, les vecteurs ne peuvent contenir que des valeurs de même type 
     # (numérique, textuel ou logique). Or, on peut avoir besoin de représenter des 
@@ -320,5 +321,7 @@ str(df[2, ]) # par exemple
 
 
 
+=======
+>>>>>>> 2dd4fa8351eb0f8609aff001af6d53b52b2e3055
 
 
