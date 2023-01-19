@@ -318,10 +318,33 @@ str(df[2, ]) # par exemple
 ##            Afficher les données               ##
 ###################################################
 ###################################################
+# Chargement d'un jeu de données via l'extension "questionr"
+library(questionr)
+data(hdv2003)
+# Si vous avez du mal à l'installer, utiliser cette ligne de commande pour commencer :
+hdv2003 <- read.table("https://raw.githubusercontent.com/abdelghani-maddi/Cours_R_Sorbonne_U/main/Jeux%20de%20donn%C3%A9es/hdv2003.csv?token=GHSAT0AAAAAAB5PIGO5HMVWIPUZPT3SQAHSY6JKHOQ", sep = ",", header = T)[,-1]
 
+View(hdv2003) #Visualiser les données
 
+head(hdv2003) #Afficher les premières lignes d'un tableau de données
+tail(hdv2003, 2) #Afficher les dernières lignes d'un tableau de données (ici, on lui a demandé les 2 dernières)
 
-=======
->>>>>>> 2dd4fa8351eb0f8609aff001af6d53b52b2e3055
+#### Utilisation du package "dplyr" : qui permet, entre autres, de visualiser rapidement et de manière condensée le contenu d’un tableau de données
+library(dplyr)
+glimpse(hdv2003)
+
+#### Utilisation du package "labelled" : permet de lister les différentes variables d’un fichier de données
+library(labelled)
+look_for(hdv2003)
+look_for(hdv2003, "trav")
+
+# La méthode summary() qui fonctionne sur tout type d’objet permet d’avoir 
+# quelques statistiques de base sur les différentes variables de notre tableau
+summary(hdv2003)
+summary(hdv2003$sexe)
+summary(hdv2003$age)
+
+# Utilisation de describe
+describe(hdv2003$sexe)
 
 
