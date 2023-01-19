@@ -191,6 +191,132 @@ sexe["Anna"]
 sexe[c("Mary", "Michael", "John")]
 
 # Indexation par condition
+# L’indexation par condition consiste à fournir un vecteur logique indiquant si
+# chaque élément doit être inclus (si TRUE) ou exclu (si FALSE). Par exemple :
+
+sexe
+sexe[c(TRUE, FALSE, FALSE, TRUE, FALSE, FALSE)]
+
+urbain <- c(TRUE, FALSE, FALSE, FALSE, TRUE, TRUE)
+poids <- c(80, 63, 75, 87, 82, 67)
+
+# Opérateur de comparaison	à connaitre :
+    # ==	égal à
+    # !=	différent de
+    # >	strictement supérieur à
+    # <	strictement inférieur à
+    # >=	supérieur ou égal à
+    # <=	inférieur ou égal à
+
+tailles[poids >= 80]
+
+# Opérateur logique	à connaitre
+    # &	et logique
+    # |	ou logique
+    # !	négation logique
+
+poids >= 80 & urbain
+poids >= 80 | urbain
+
+# Assignation par indexation
+    # Dans tous les exemples précédents, on a utilisé l’indexation pour extraire une
+    # partie d’un vecteur, en plaçant l’opération d’indexation à 
+    # droite de l’opérateur <-.
+
+sexe[c(1, 3, 4)] <- c("Homme", "Homme", "Homme")
+sexe[c(1, 3, 4)] <- "Homme"
+
+#### LISTES ET TABLEAUX DE DONNEES
+ # LES LISTES :
+    # Par nature, les vecteurs ne peuvent contenir que des valeurs de même type 
+    # (numérique, textuel ou logique). Or, on peut avoir besoin de représenter des 
+    # objets plus complexes composés d’éléments disparates. C’est 
+    # ce que permettent les listes.
+
+l1 <- list(1:5, "abc")
+l1
+length(l1)
+
+# On peut les nommer
+l2 <- list(
+  minuscules = letters, 
+  majuscules = LETTERS, 
+  mois = month.name
+)
+l2
+length(l2)
+
+l <- list(l1, l2)
+# Question : qu'elle sera la longueur de la liste "l" ??
+length(l)
+
+## str : permet de visualiser la structure d'un objet :
+str(l)
+
+## Pour combiner les éléments d’une liste, il faut utiliser la fonction append()
+l <- append(l1, l2)
+length(l)
+
+## L'indexation : On peut utiliser à la fois l’indexation par position, l’indexation par nom et l’indexation par condition.
+l
+l[c(1,3,4)]
+l[c("majuscules", "minuscules")]
+l[c(TRUE, TRUE, FALSE, FALSE, TRUE)]
+str(l[1])
+
+  ## opérations sur les listes : utiliser les doubles corchets
+mean(l[1]) # Ne fonctionne pas !
+mean(l[[1]]) # fonctionne :) -- on récupère le vecteur à l'intérieur de la liste.
+l[["mois"]]
+
+
+##########
+# TABLEAUX DE DONNEES : On peut créer un tableau de données avec la fonction data.frame() :
+df <- data.frame(
+  sexe =  c("f", "f", "h", "h"), 
+  age = c(52, 31, 29, 35), 
+  blond = c(FALSE, TRUE, TRUE, FALSE)
+)
+df
+str(df) # structure du df
+length(df) # nombre de vecteurs / variables
+names(df) # libellés des colonnes
+nrow(df) # nombre de lignes
+ncol(df) # nombre de colonnes
+dim(df) # dimensions
+row.names(df) <- c("Anna", "Mary-Ann", "Michael", "John") # on peut nommer les lignes comme les colonnes !
+df
+
+### Indexation : 
+# Les tableaux de données étant des listes, nous pouvons donc utiliser les
+# crochets simples ([]), les crochets doubles ([[]]) et le symbole dollar ($) 
+# pour extraire des parties de notre tableau, de la même manière que pour n’importe quelle liste.
+df[1]
+df[[1]]
+df$sexe
+
+df[3, 2] # valeur du croisement ligne 3 et colonne 2
+df["Michael", "age"]
+df[3, "age"]
+df["Michael", 2]
+
+df[1:2,] #extraire les lignes 1 et 2, et toutes les colonnes
+df[,c("sexe", "blond")] #extraire les colonnes sexe et blond, pour tous les individus
+
+#NB : LA VIRGULE EST IMPORTANTE POUR QUE R SACHE CE QU'ON VEUT (ligne, colone...)
+df[2, ]
+df[, 2]
+df[2]
+
+## on peut aussi faire : 
+str(df[2, ]) # par exemple
+
+
+###################################################
+###################################################
+##            Afficher les données               ##
+###################################################
+###################################################
 
 
 
