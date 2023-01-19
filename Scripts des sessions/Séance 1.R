@@ -191,8 +191,41 @@ sexe["Anna"]
 sexe[c("Mary", "Michael", "John")]
 
 # Indexation par condition
+# L’indexation par condition consiste à fournir un vecteur logique indiquant si
+# chaque élément doit être inclus (si TRUE) ou exclu (si FALSE). Par exemple :
 
+sexe
+sexe[c(TRUE, FALSE, FALSE, TRUE, FALSE, FALSE)]
 
+urbain <- c(TRUE, FALSE, FALSE, FALSE, TRUE, TRUE)
+poids <- c(80, 63, 75, 87, 82, 67)
 
+# Opérateur de comparaison	à connaitre :
+    # ==	égal à
+    # !=	différent de
+    # >	strictement supérieur à
+    # <	strictement inférieur à
+    # >=	supérieur ou égal à
+    # <=	inférieur ou égal à
+
+tailles[poids >= 80]
+
+# Opérateur logique	à connaitre
+    # &	et logique
+    # |	ou logique
+    # !	négation logique
+
+poids >= 80 & urbain
+poids >= 80 | urbain
+
+# Assignation par indexation
+    # Dans tous les exemples précédents, on a utilisé l’indexation pour extraire une
+    # partie d’un vecteur, en plaçant l’opération d’indexation à 
+    # droite de l’opérateur <-.
+
+sexe[c(1, 3, 4)] <- c("Homme", "Homme", "Homme")
+sexe[c(1, 3, 4)] <- "Homme"
+
+#### LISTES ET TABLEAUX DE DONNEES
 
 
