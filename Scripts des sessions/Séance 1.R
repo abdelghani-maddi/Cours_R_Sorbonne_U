@@ -1,5 +1,5 @@
 # Présentation de l'interface Rstudio
-
+ 
 # L’interface de RStudio est divisée en quatre quadrants :
   
 # le quadrant supérieur gauche est dédié aux différents fichiers de travail ;
