@@ -23,6 +23,10 @@ message(paste0("La moyenne est de ", format(round(mean(v),        digits = 1), d
 # Le principe de cet opérateur est de passer l’élément situé à sa gauche comme premier argument de la fonction située à sa droite.
 # Ainsi, l’écriture x |> f() est équivalente à f(x) et l’écriture x |> f(y) à f(x, y).
 
+# Parfois, on souhaite passer l’objet x à un autre endroit de la fonction f() que le premier argument. Depuis la version 4.2, 
+# R a introduit l’opérateur _,que l’on nomme un placeholder, pour indiquer où passer l’objet de gauche. Ainsi, x |> f(y, a = _) devient 
+# équivalent à f(y, a = x). ATTENTION : le placeholder doit impérativement être transmis à un argument nommé !
+
 v |> 
   mean() |> 
   round(digits = 1) |> 
