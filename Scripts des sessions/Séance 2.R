@@ -1,3 +1,52 @@
+# Manipulation de données
+
+# Il est fréquent d’enchainer des opérations en appelant successivement des fonctions sur le résultat de l’appel précédent.
+# Prenons un exemple. Supposons que nous ayons un vecteur numérique v dont nous voulons calculer la moyenne puis l’afficher via un message dans la console. 
+# Pour un meilleur rendu, nous allons arrondir la moyenne à une décimale, mettre en forme le résultat à la française, c’est-à-dire avec la virgule comme 
+# séparateur des décimales, créer une phrase avec le résultat, puis l’afficher dans la console. Voici le code correspondant, étape par étape.
+
+v <- c(1.2, 8.7, 5.6, 11.4)
+m <- mean(v)
+r <- round(m, digits = 1)
+f <- format(r, decimal.mark = ",")
+p <- paste0("La moyenne est de ", f, ".")
+message(p)
+
+# Cette écriture, n’est pas vraiment optimale, car cela entraine la création d’un grand nombre de variables intermédiaires totalement inutiles. 
+# Nous pourrions dès lors imbriquer les différentes fonctions les unes dans les autres :
+
+message(paste0("La moyenne est de ", format(round(mean(v),        digits = 1), decimal.mark = ","), "."))
+
+
+# Le pipe de R
+# Depuis la version 4.1, R a introduit ce que l’on nomme un pipe (tuyau en anglais), un nouvel opérateur noté |>.
+# Le principe de cet opérateur est de passer l’élément situé à sa gauche comme premier argument de la fonction située à sa droite.
+# Ainsi, l’écriture x |> f() est équivalente à f(x) et l’écriture x |> f(y) à f(x, y).
+
+v |> 
+  mean() |> 
+  round(digits = 1) |> 
+  format(decimal.mark = ",") |> 
+  paste0("La moyenne est de ", m = _, ".") |> 
+  message()
+
+# Le pipe du tidyverse : %>%
+# Ce n’est qu’à partir de la version 4.1 sortie en 2021 que R a proposé de manière native un pipe, en l’occurence l’opérateur |>.
+# Cet opérateur s’écrit %>% et il dispose lui aussi d’un placeholder qui est le .. La syntaxe du placeholder est un peu plus 
+#souple puisqu’il peut être passé à tout type d’argument, y compris un argument sans nom. Si l’on reprend notre exemple précédent.
+
+library(magrittr)
+v %>% 
+  mean() %>%
+  round(digits = 1) %>%
+  format(decimal.mark = ",") %>%
+  paste0("La moyenne est de ", ., ".") %>%
+  message()
+
+
+
+
+
 # Facteurs et forcats : https://larmarange.github.io/guide-R/manipulation/facteurs.html 
 # les facteurs sont utilisés pour représenter des variables catégorielles
 
