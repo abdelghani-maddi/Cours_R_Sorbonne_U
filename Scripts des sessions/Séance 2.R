@@ -236,7 +236,7 @@ library(gtsummary)
 library(GGally)
 
 theme_gtsummary_language("fr", decimal.mark = ",", big.mark = " ")
-
+ 
 # Import des données -----
 
 trial <- readxl::read_excel("donnees/trial.xlsx")
