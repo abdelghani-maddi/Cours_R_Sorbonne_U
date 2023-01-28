@@ -246,7 +246,6 @@ trial %>%
   add_overall(last = TRUE) %>%
   add_p()
 
-  
 
 # fusion de deux tableaux 
 
