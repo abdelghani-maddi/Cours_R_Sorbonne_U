@@ -48,28 +48,35 @@ v %>%
   message()
 
 
-
-
-
 # Facteurs et forcats : https://larmarange.github.io/guide-R/manipulation/facteurs.html 
-# les facteurs sont utilisés pour représenter des variables catégorielles
+# les facteurs sont utilisés pour représenter des variables catégorielles , c’est-à-dire des variables 
+# qui ont un nombre fixé et limité de valeurs possibles (par exemple une variable sexe ou une variable niveau d’éducation).
 
+# Le plus simple pour créer un facteur est de partir d’un vecteur textuel et d’utiliser la fonction factor().
 x <- c("nord", "sud", "sud", "est", "est", "est")
 x |> 
   factor()
 
+# Par défaut, les niveaux du facteur obtenu correspondent aux valeurs uniques du fecteur textuel, triés par 
+# ordre alphabétique. Si l’on veut contrôler l’ordre des niveaux, et éventuellement indiquer un niveau 
+# absent des données, on utilisera l’argument levels de factor().
 x |> 
   factor(levels = c("nord", "est", "sud", "ouest"))
 
-
+# Si une valeur observée dans les données n’est pas indiqué dans levels, elle sera siliencieusement convertie en valeur manquante (NA).
 x |> 
   factor(levels = c("nord", "sud"))
 
+# Si l’on veut être averti par un warning dans ce genre de situation, on pourra avoir plutôt recours à la fonction readr::parse_factor() du package readr, 
+# qui, le cas échéant, renverra un tableau avec les problèmes rencontrés.
 x |> 
   readr::parse_factor(levels = c("nord", "sud"))
 
 f <- factor(x)
 levels(f)
+
+# Dans certaines situations (par exemple pour la réalisation d’une régression logistique ordinale), on peut avoir avoir besoin d’indiquer que les modalités du 
+# facteur sont ordonnées héarchiquement. Dans ce cas là, on aura simplement recours à ordered() pour créer/convertir notre facteur.
 
 c("supérieur", "primaire", "secondaire", "primaire", "supérieur") |> 
   ordered(levels = c("primaire", "secondaire", "supérieur"))
@@ -83,21 +90,30 @@ as.character(f)
 library(tidyverse)
 data("hdv2003", package = "questionr")
 
+# Affichier les modalités d'une variables
+hdv2003$qualif |> 
+  levels()
+
+# Avoir les fréquences
 hdv2003$qualif |> 
   questionr::freq()
 
+# Inverser simplement d'ordre
 hdv2003$qualif |> 
   fct_rev() |> 
   questionr::freq()
 
+# On peut également seulement indiquer les premières modalités, les autres seront ajoutées à la fin sans changer leur ordre.
 hdv2003$qualif |> 
   fct_relevel("Cadre", "Autre", "Technicien", "Employe") |> 
   questionr::freq()
 
+# La fonction forcats::fct_infreq() ordonne les modalités de celle la plus fréquente à celle la moins fréquente (nombre d’observations) :
 hdv2003$qualif |> 
   fct_infreq() |> 
   questionr::freq()
 
+# Pour inverser l’ordre, on combinera forcats::fct_infreq() avec forcats::fct_rev().
 hdv2003$qualif |> 
   fct_infreq() |> 
   fct_rev() |> 
@@ -118,7 +134,7 @@ hdv2003 |>
 # Modifier les modalités
 hdv2003$sexe |> 
   questionr::freq()
-
+# Pour modifier le nom des modalités, on pourra avoir recours à forcats::fct_recode() avec une syntaxe de la forme "nouveau nom" = "ancien nom".
 hdv2003$sexe <- 
   hdv2003$sexe |> 
   fct_recode(f = "Femme", m = "Homme")
@@ -162,6 +178,7 @@ hdv2003$instruction <-
     "supérieur" = "Enseignement superieur y compris technique superieur"
   )
 
+# Pour transformer les valeurs manquantes (NA) en une modalité explicite, on pourra avoir recours à forcats::fct_explicit_na().
 hdv2003$instruction <-
   hdv2003$instruction |> 
   fct_explicit_na(na_level = "(manquant)")
