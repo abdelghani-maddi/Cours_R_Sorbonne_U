@@ -347,3 +347,228 @@ summary(hdv2003$age)
 describe(hdv2003$sexe)
 
 
+
+# Manipulation de données
+
+# Il est fréquent d’enchainer des opérations en appelant successivement des fonctions sur le résultat de l’appel précédent.
+# Prenons un exemple. Supposons que nous ayons un vecteur numérique v dont nous voulons calculer la moyenne puis l’afficher via un message dans la console. 
+# Pour un meilleur rendu, nous allons arrondir la moyenne à une décimale, mettre en forme le résultat à la française, c’est-à-dire avec la virgule comme 
+# séparateur des décimales, créer une phrase avec le résultat, puis l’afficher dans la console. Voici le code correspondant, étape par étape.
+
+v <- c(1.2, 8.7, 5.6, 11.4)
+m <- mean(v)
+r <- round(m, digits = 1)
+f <- format(r, decimal.mark = ",")
+p <- paste0("La moyenne est de ", f, ".")
+message(p)
+
+# Cette écriture, n’est pas vraiment optimale, car cela entraine la création d’un grand nombre de variables intermédiaires totalement inutiles. 
+# Nous pourrions dès lors imbriquer les différentes fonctions les unes dans les autres :
+
+message(paste0("La moyenne est de ", format(round(mean(v),        digits = 1), decimal.mark = ","), "."))
+
+
+# Le pipe de R
+# Depuis la version 4.1, R a introduit ce que l’on nomme un pipe (tuyau en anglais), un nouvel opérateur noté |>.
+# Le principe de cet opérateur est de passer l’élément situé à sa gauche comme premier argument de la fonction située à sa droite.
+# Ainsi, l’écriture x |> f() est équivalente à f(x) et l’écriture x |> f(y) à f(x, y).
+
+# Parfois, on souhaite passer l’objet x à un autre endroit de la fonction f() que le premier argument. Depuis la version 4.2, 
+# R a introduit l’opérateur _,que l’on nomme un placeholder, pour indiquer où passer l’objet de gauche. Ainsi, x |> f(y, a = _) devient 
+# équivalent à f(y, a = x). ATTENTION : le placeholder doit impérativement être transmis à un argument nommé !
+
+v |> 
+  mean() |> 
+  round(digits = 1) |> 
+  format(decimal.mark = ",") |> 
+  paste0("La moyenne est de ", m = _, ".") |> 
+  message()
+
+# Le pipe du tidyverse : %>%
+# Ce n’est qu’à partir de la version 4.1 sortie en 2021 que R a proposé de manière native un pipe, en l’occurence l’opérateur |>.
+# Cet opérateur s’écrit %>% et il dispose lui aussi d’un placeholder qui est le .. La syntaxe du placeholder est un peu plus 
+#souple puisqu’il peut être passé à tout type d’argument, y compris un argument sans nom. Si l’on reprend notre exemple précédent.
+
+library(magrittr)
+v %>% 
+  mean() %>%
+  round(digits = 1) %>%
+  format(decimal.mark = ",") %>%
+  paste0("La moyenne est de ", ., ".") %>%
+  message()
+
+
+# Facteurs et forcats : https://larmarange.github.io/guide-R/manipulation/facteurs.html 
+# les facteurs sont utilisés pour représenter des variables catégorielles
+
+x <- c("nord", "sud", "sud", "est", "est", "est")
+x |> 
+  factor()
+
+x |> 
+  factor(levels = c("nord", "est", "sud", "ouest"))
+
+
+x |> 
+  factor(levels = c("nord", "sud"))
+
+x |> 
+  readr::parse_factor(levels = c("nord", "sud"))
+
+f <- factor(x)
+levels(f)
+
+c("supérieur", "primaire", "secondaire", "primaire", "supérieur") |> 
+  ordered(levels = c("primaire", "secondaire", "supérieur"))
+
+class(f)
+typeof(f)
+as.integer(f)
+as.character(f)
+
+# Changer l’ordre des modalités
+library(tidyverse)
+data("hdv2003", package = "questionr")
+
+hdv2003$qualif |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_rev() |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_relevel("Cadre", "Autre", "Technicien", "Employe") |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_infreq() |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_infreq() |> 
+  fct_rev() |> 
+  questionr::freq()
+
+v <- c("c", "a", "d", "b", "a", "c")
+factor(v)
+
+fct_inorder(v)
+
+hdv2003$qualif_tri_age <-
+  hdv2003$qualif |> 
+  fct_reorder(hdv2003$age, .fun = mean)
+hdv2003 |> 
+  dplyr::group_by(qualif_tri_age) |> 
+  dplyr::summarise(age_moyen = mean(age))
+
+# Modifier les modalités
+hdv2003$sexe |> 
+  questionr::freq()
+
+hdv2003$sexe <- 
+  hdv2003$sexe |> 
+  fct_recode(f = "Femme", m = "Homme")
+hdv2003$sexe |> 
+  questionr::freq()
+
+hdv2003$nivetud |> 
+  questionr::freq()
+
+hdv2003$instruction <- 
+  hdv2003$nivetud |> 
+  fct_recode(
+    "primaire" = "N'a jamais fait d'etudes",
+    "primaire" = "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+    "primaire" = "Derniere annee d'etudes primaires",
+    "secondaire" = "1er cycle",
+    "secondaire" = "2eme cycle",
+    "technique/professionnel" = "Enseignement technique ou professionnel court",
+    "technique/professionnel" = "Enseignement technique ou professionnel long",
+    "supérieur" = "Enseignement superieur y compris technique superieur"
+  )
+hdv2003$instruction |> 
+  questionr::freq()
+
+hdv2003$instruction <- 
+  hdv2003$nivetud |> 
+  fct_collapse(
+    "primaire" = c(
+      "N'a jamais fait d'etudes",
+      "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+      "Derniere annee d'etudes primaires"
+    ),
+    "secondaire" = c(
+      "1er cycle",
+      "2eme cycle"
+    ),
+    "technique/professionnel" = c(
+      "Enseignement technique ou professionnel court",
+      "Enseignement technique ou professionnel long"
+    ),
+    "supérieur" = "Enseignement superieur y compris technique superieur"
+  )
+
+hdv2003$instruction <-
+  hdv2003$instruction |> 
+  fct_explicit_na(na_level = "(manquant)")
+hdv2003$instruction |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_other(keep = c("Technicien", "Cadre", "Employe")) |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_lump_n(n = 4, other_level = "Autres") |> 
+  questionr::freq()
+
+hdv2003$qualif |> 
+  fct_lump_min(min = 200, other_level = "Autres") |> 
+  questionr::freq()
+
+v <- factor(
+  c("a", "a", "b", "a"),
+  levels = c("a", "b", "c")
+)
+questionr::freq(v)
+
+v
+v |> fct_drop()
+
+v |> fct_expand("d", "e")
+
+# Découper une variable numérique en classes
+
+hdv2003 <-
+  hdv2003 |> 
+  mutate(groupe_ages = cut(age, 5))
+hdv2003$groupe_ages |> questionr::freq()
+
+hdv2003 <-
+  hdv2003 |> 
+  mutate(groupe_ages = cut(age, c(18, 20, 40, 60, 80, 97)))
+hdv2003$groupe_ages |> questionr::freq()
+
+hdv2003 <-
+  hdv2003 |> 
+  mutate(groupe_ages = cut(
+    age, 
+    c(18, 20, 40, 60, 80, 97),
+    include.lowest = TRUE
+  ))
+hdv2003$groupe_ages |> questionr::freq()
+
+hdv2003 <-
+  hdv2003 |> 
+  mutate(groupe_ages = cut(
+    age, 
+    c(18, 20, 40, 60, 80, 97),
+    include.lowest = TRUE,
+    right = FALSE
+  ))
+hdv2003$groupe_ages |> questionr::freq()
+
