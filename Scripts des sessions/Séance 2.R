@@ -13,7 +13,7 @@ theme_gtsummary_language("fr", decimal.mark = ",", big.mark = " ")
 trial <- readxl::read_excel("donnees/trial.xlsx")
 
 var_label(trial$age) <- "Âge en années"
-var_label(trial$trt) <- "Traitement"
+var_label(trial$trt) <- "Traitement" 
 
 save(trial, file = "donnees/trial.RData")
 

@@ -233,7 +233,7 @@ sexe[c(1, 3, 4)] <- "Homme"
     # objets plus complexes composés d’éléments disparates. C’est 
     # ce que permettent les listes.
 
-l1 <- list(1:5, "abc")
+l1 <- list(1:5, "abc") 
 l1
 length(l1)
 
