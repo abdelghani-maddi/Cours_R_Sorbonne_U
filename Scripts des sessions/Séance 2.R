@@ -1,5 +1,6 @@
 # Analyse descriptive du fichier trial ----
 
+# Chargement des packages ----
 library(tidyverse)
 library(labelled)
 library(questionr)

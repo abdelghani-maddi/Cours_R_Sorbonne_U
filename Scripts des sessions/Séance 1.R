@@ -264,7 +264,7 @@ l[c("majuscules", "minuscules")]
 l[c(TRUE, TRUE, FALSE, FALSE, TRUE)]
 str(l[1])
 
-  ## opérations sur les listes : utiliser les doubles corchets
+## opérations sur les listes : utiliser les doubles corchets
 mean(l[1]) # Ne fonctionne pas !
 mean(l[[1]]) # fonctionne :) -- on récupère le vecteur à l'intérieur de la liste.
 l[["mois"]]
@@ -293,6 +293,9 @@ df
 # pour extraire des parties de notre tableau, de la même manière que pour n’importe quelle liste.
 df[1]
 df[[1]]
+mean(df[2])
+mean(df[[2]])
+
 df$sexe
 
 df[3, 2] # valeur du croisement ligne 3 et colonne 2
@@ -320,8 +323,6 @@ str(df[2, ]) # par exemple
 # Chargement d'un jeu de données via l'extension "questionr"
 library(questionr)
 data(hdv2003)
-# Si vous avez du mal à l'installer, utiliser cette ligne de commande pour commencer :
-hdv2003 <- read.table("https://raw.githubusercontent.com/abdelghani-maddi/Cours_R_Sorbonne_U/main/Jeux%20de%20donn%C3%A9es/hdv2003.csv?token=GHSAT0AAAAAAB5PIGO5HMVWIPUZPT3SQAHSY6JKHOQ", sep = ",", header = T)[,-1]
 
 View(hdv2003) #Visualiser les données
 
@@ -401,30 +402,28 @@ v %>%
 # Facteurs et forcats : https://larmarange.github.io/guide-R/manipulation/facteurs.html 
 # les facteurs sont utilisés pour représenter des variables catégorielles
 
-x <- c("nord", "sud", "sud", "est", "est", "est")
-x |> 
+x <- c("nord", "sud", "sud", "est", "est", "est") %>%
   factor()
 
-x |> 
+x %>% 
   factor(levels = c("nord", "est", "sud", "ouest"))
 
-
-x |> 
+x %>% 
   factor(levels = c("nord", "sud"))
 
-x |> 
+x %>% 
   readr::parse_factor(levels = c("nord", "sud"))
 
 f <- factor(x)
 levels(f)
 
-c("supérieur", "primaire", "secondaire", "primaire", "supérieur") |> 
-  ordered(levels = c("primaire", "secondaire", "supérieur"))
-
 class(f)
 typeof(f)
 as.integer(f)
 as.character(f)
+
+c("supérieur", "primaire", "secondaire", "primaire", "supérieur") |> 
+  ordered(levels = c("primaire", "secondaire", "supérieur"))
 
 # Changer l’ordre des modalités
 library(tidyverse)
@@ -433,35 +432,43 @@ data("hdv2003", package = "questionr")
 hdv2003$qualif |> 
   questionr::freq()
 
+# Inverser l'ordre
 hdv2003$qualif |> 
   fct_rev() |> 
   questionr::freq()
 
+# spécifier l'ordre
 hdv2003$qualif |> 
   fct_relevel("Cadre", "Autre", "Technicien", "Employe") |> 
   questionr::freq()
 
+# ordonner par frequence - décroissant
 hdv2003$qualif |> 
   fct_infreq() |> 
   questionr::freq()
 
+# ordonner par frequence - croissant
 hdv2003$qualif |> 
   fct_infreq() |> 
   fct_rev() |> 
   questionr::freq()
 
+
 v <- c("c", "a", "d", "b", "a", "c")
 factor(v)
+fct_inorder(v) # ordonner par ordre d'apparance dans le vecteur
 
-fct_inorder(v)
-
+# trier les modalités de la variable qualif en fonction de l’âge moyen (dans chaque modalité)
 hdv2003$qualif_tri_age <-
   hdv2003$qualif |> 
   fct_reorder(hdv2003$age, .fun = mean)
-hdv2003 |> 
-  dplyr::group_by(qualif_tri_age) |> 
-  dplyr::summarise(age_moyen = mean(age))
 
+  # vérification :
+  hdv2003 |> 
+    dplyr::group_by(qualif_tri_age) |> 
+    dplyr::summarise(age_moyen = mean(age))
+
+  
 # Modifier les modalités
 hdv2003$sexe |> 
   questionr::freq()
@@ -509,37 +516,34 @@ hdv2003$instruction <-
     "supérieur" = "Enseignement superieur y compris technique superieur"
   )
 
+# Pour transformer les valeurs manquantes (NA) en une modalité explicite, on pourra avoir recours à forcats::fct_explicit_na().
 hdv2003$instruction <-
   hdv2003$instruction |> 
   fct_explicit_na(na_level = "(manquant)")
+
 hdv2003$instruction |> 
   questionr::freq()
 
 hdv2003$qualif |> 
   questionr::freq()
-
+ 
+# Plusieurs fonctions permettent de regrouper plusieurs modalités dans une modalité autres.
+# Par exemple, avec forcats::fct_other(), on pourra indiquer les modalités à garder.
 hdv2003$qualif |> 
   fct_other(keep = c("Technicien", "Cadre", "Employe")) |> 
   questionr::freq()
 
+# La fonction forcats::fct_lump_n() permets de ne conserver que les modalités les
+# plus fréquentes et de regrouper les autres dans une modalité autres.
 hdv2003$qualif |> 
   fct_lump_n(n = 4, other_level = "Autres") |> 
   questionr::freq()
 
+# Et forcats::fct_lump_min() celles qui ont un minimum d’observations.
+
 hdv2003$qualif |> 
   fct_lump_min(min = 200, other_level = "Autres") |> 
   questionr::freq()
-
-v <- factor(
-  c("a", "a", "b", "a"),
-  levels = c("a", "b", "c")
-)
-questionr::freq(v)
-
-v
-v |> fct_drop()
-
-v |> fct_expand("d", "e")
 
 # Découper une variable numérique en classes
 
