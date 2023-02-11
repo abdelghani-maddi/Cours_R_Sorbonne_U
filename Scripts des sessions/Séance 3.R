@@ -81,7 +81,7 @@ fviz_mca_ind(acm, geom = "point", habillage = hdv2003$relig)
 
 scatter(acm, col = RColorBrewer::brewer.pal(5, "Set1"))
 
-# ACM alternative
+# ACM alternative 
 
 d3 <- hdv2003 %>%
   select(peche.chasse, cinema, cuisine, bricol, sport, lecture.bd)
