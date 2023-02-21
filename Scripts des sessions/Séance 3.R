@@ -5,6 +5,7 @@
 library(tidyverse)
 library(ade4)
 library(factoextra)
+library(explor)
 
 ggplot(iris) + 
   aes(x = Petal.Length, y = Petal.Width) +
@@ -14,12 +15,15 @@ res <- iris %>%
   select(starts_with("Petal")) %>%
   dudi.pca(nf = 2, scannf = FALSE)
 
+## explorer
+explor::explor(res)
+
+##
 res2 <- explor::prepare_results(res)
 explor::PCA_ind_plot(res2, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      ind_lab_min_contrib = 0, col_var = NULL, labels_size = 9, point_opacity = 0.5,
                      opacity_var = NULL, point_size = 64, ellipses = FALSE, transitions = TRUE,
                      labels_positions = NULL)
-
 
 ## Exemple plus complet -----
 
@@ -35,11 +39,13 @@ levels(hdv2003$etud) <- c(
 )
 
 d2 <- hdv2003 %>%
-  select(grpage, sexe, etud, peche.chasse, cinema, cuisine, bricol, sport, lecture.bd)
+  select(grpage, sexe, etud, peche.chasse, cinema, cuisine, bricol, sport, lecture.bd) %>%
+  dudi.acm()
 
+# le mieux :
 acm <- dudi.acm(d2, scannf = FALSE, nf = Inf)
 
-# explor::explor(acm)
+ explor::explor(acm)
 
 screeplot(acm)
 fviz_screeplot(acm, choice = "eigenvalue")
