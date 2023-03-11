@@ -16,7 +16,7 @@ res <- iris %>%
   dudi.pca(nf = 2, scannf = FALSE)
 
 ## explorer
-explor::explor(res)
+# explor::explor(res)
 
 ##
 res2 <- explor::prepare_results(res)
