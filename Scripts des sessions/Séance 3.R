@@ -1,21 +1,30 @@
-# Séance 3 - Analyse factorielles
+# Séance 3 - Analyse factorielles ----
 
-## Exemple introductif ----
-
+# Chargement des packages ----
 library(tidyverse)
 library(ade4)
 library(factoextra)
 library(explor)
+library(ggplot2)
+library(questionr)
+library(FactoMineR)
 
-ggplot(iris) + 
-  aes(x = Petal.Length, y = Petal.Width) +
-  geom_point()
+
+## Exemple introductif ----
+## jeux de données iris avec 150 individus et plusieurs variables sur les feuilles d'iris
+data(iris)
+
+
+ggplot(iris) +
+ aes(x = Petal.Length, y = Petal.Width) +
+ geom_point(shape = "circle", size = 1.5, colour = "#112446") +
+ theme_minimal()
 
 res <- iris %>%
   select(starts_with("Petal")) %>%
   dudi.pca(nf = 2, scannf = FALSE)
 
-## explorer
+## explorer le résultat
 # explor::explor(res)
 
 ##
@@ -26,8 +35,6 @@ explor::PCA_ind_plot(res2, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      labels_positions = NULL)
 
 ## Exemple plus complet -----
-
-library(questionr)
 data(hdv2003)
 
 hdv2003$grpage <- cut(hdv2003$age, c(16, 25, 45, 65, 93), right = FALSE, include.lowest = TRUE)
@@ -39,21 +46,28 @@ levels(hdv2003$etud) <- c(
 )
 
 d2 <- hdv2003 %>%
-  select(grpage, sexe, etud, peche.chasse, cinema, cuisine, bricol, sport, lecture.bd) %>%
-  dudi.acm()
+  select(grpage, sexe, etud, peche.chasse, cinema, cuisine, bricol, sport, lecture.bd)
 
 # le mieux :
 acm <- dudi.acm(d2, scannf = FALSE, nf = Inf)
+#explor::explor(acm)
+screeplot(acm) # autre façon de représenter graph des axes
 
- explor::explor(acm)
+##
+# Usage du factoextra 
+fviz_screeplot(acm, choice = "eigenvalue") # inertie
+fviz_screeplot(acm) # inertie / inerie totale (en %)
+summary(acm) # autre façn de connaitre l'inertie des 5 premiers axes
+##
 
-screeplot(acm)
-fviz_screeplot(acm, choice = "eigenvalue")
-fviz_screeplot(acm)
+# cercle des corrélations de l'ACM
+s.corcircle(acm$co)
+s.corcircle(acm$co, clabel = .7) # ajuster les étiquettes
+fviz_mca_var(acm)
+fviz_mca_var(acm, repel = TRUE) # éviter la superposition des étiquettes avec "repel"
 
-s.corcircle(acm$co, clabel = .7)
-fviz_mca_var(acm, repel = TRUE)
-
+# graphique plus beau des barycentres avec explor : 
+# explor::explor(acm)
 res <- explor::prepare_results(acm)
 explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = FALSE, var_sup_choice = ,
                      var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Variable",
@@ -61,34 +75,46 @@ explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = FALSE, var_sup_choice = ,
                      transitions = TRUE, labels_positions = NULL, labels_prepend_var = FALSE,
                      xlim = c(-1.45, 1.81), ylim = c(-2.03, 1.23))
 
-boxplot(acm)
-boxplot(acm, xax = 2)
+## outil pour analyser la distribution au sein des axes
+boxplot(acm) # axe 1 par défaut
+boxplot(acm, xax = 2) # choisir l'axe
 
-fviz_contrib(acm, choice = "var", axes = 1)
+# Pour analyser la contribution des modalités à la formation des axes
+fviz_contrib(acm, choice = "var", axes = 1) #  personnaliser l'axe
+fviz_contrib(acm, choice = "var", axes = 2) #  personnaliser l'axe
 
+# Autre façon pour analyser la contribution des modalités à la formation des axes
 par(mfrow = c(2, 2))
 for (i in 1:4) 
   barplot(acm$cr[, i], names.arg = row.names(acm$cr), las = 2, main = paste("Axe", i))
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1)) # à remettre pour ne pas afficher le reste des graphiques deux à deux
 
+# Représentation des individus avec facrotextra (facultatif)
 fviz_mca_ind(acm, geom ="point", alpha.ind = .25)
+
 
 # devtools::install_github("larmarange/JLutils")
 library(JLutils)
-s.freq(acm$li)
-
+s.freq(acm$li) # La taille des carrés représente le nombre d'observations, plutôt que simplement des point de même taille
+# Une autre façon intéressante
 s.hist(acm$li, clabel = 0, pch = 15)
-
+# représentation qui lie les observations aux barycentes :
+s.class(acm$li, d2$sexe)
 s.class(acm$li, d2$sexe, col = c("red", "darkgreen"))
+# Autre façon intéressante :
+fviz_mca_ind(acm)
+fviz_mca_ind(acm, geom = "point")
+fviz_mca_ind(acm, geom = "point", habillage = d2$sexe)
 fviz_mca_ind(acm, geom = "point", habillage = d2$sexe, addEllipses = TRUE)
 
+# Variables supplémentaires / illustratives
 s.class(acm$li, hdv2003$relig)
-fviz_mca_ind(acm, geom = "point", habillage = hdv2003$relig)
-
+fviz_mca_ind(acm, geom = "point", habillage = hdv2003$relig) # cela marche aussi avec "habillahe" à condition de ne pas changer l'ordre des individus !
+# Résumer l'information pour toutes les variables
+scatter(acm)
 scatter(acm, col = RColorBrewer::brewer.pal(5, "Set1"))
 
 # ACM alternative 
-
 d3 <- hdv2003 %>%
   select(peche.chasse, cinema, cuisine, bricol, sport, lecture.bd)
 acm2 <- dudi.acm(d3, scannf = FALSE, nf = Inf)
@@ -101,5 +127,4 @@ scatter(acm2, col = RColorBrewer::brewer.pal(5, "Set1"))
 
 # Variables supplémentaires avec FactorMineR
 
-library(FactoMineR)
 acm3 <- MCA(d2, quali.sup = 1:3)
