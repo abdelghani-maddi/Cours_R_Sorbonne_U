@@ -53,6 +53,7 @@ plot(arbre, labels = FALSE)
 rect.hclust(arbre, 2, border = "red")
 rect.hclust(arbre, 5, border = "blue")
 
+# Une façon plus visuelle de représenter le dendogramme
 library(dendextend)
 color_branches(arbre, k = 5) %>% ggplot(labels = FALSE)
 
@@ -66,26 +67,29 @@ plot(inertie[1:20], type = "s")
 inertie_gower <- sort(arbre_gower$height, decreasing = TRUE)
 plot(inertie_gower[1:10], type = "s")
 
-source(url("https://raw.githubusercontent.com/larmarange/JLutils/master/R/clustering.R"))
-best.cutree(arbre_gower, graph = TRUE)
-best.cutree(arbre, graph = TRUE)
+# source(url("https://raw.githubusercontent.com/larmarange/JLutils/master/R/clustering.R"))
+# best.cutree(arbre_gower, graph = TRUE)
+# best.cutree(arbre, graph = TRUE)
 
+# déterminer le nombre de classes avec des indicateurs poussés
 library(WeightedCluster)
 as.clustrange(arbre, md) %>% plot()
 as.clustrange(arbre_gower, md_gower) %>% plot()
 
 
+# Caractériser les classes ----
+hdv2003$typo <- cutree(arbre, 3) # fonction cutree : apratenance de chaque observation à chaque classe (ne pas modifier l'ordre des observations dans les différents objets !!!)
+hdv2003$typo_gower <- cutree(arbre_gower, 3) # même chose pour gower
 
-hdv2003$typo <- cutree(arbre, 3)
-hdv2003$typo_gower <- cutree(arbre_gower, 3)
-
+# Soit faire un tbl_summary
 hdv2003 %>%
   tbl_summary(include = c(names(d2), "typo"), by = "typo")
 
+# ou bien utiliser ggtable :
+hdv2003$typo <- factor(hdv2003$typo) # transfomer d'abord en facteur
+hdv2003$typo_gower <- factor(hdv2003$typo_gower) # transfomer d'abord en facteur
 
-hdv2003$typo <- factor(hdv2003$typo)
-hdv2003$typo_gower <- factor(hdv2003$typo_gower)
-
+# ggtable
 ggtable(
   hdv2003,
   columnsX = c("typo", "typo_gower"),
@@ -95,8 +99,8 @@ ggtable(
   legend = 1
 )
 
-## 3D
+## Bonus : graphique 3D combinant ACM et CAH
 library(FactoMineR)
 ACM <- MCA(d2)
 res.hcpc <- HCPC(ACM, graph = FALSE)
-plot(res.hcpc, choice = "3D.map", ann = F, cex.lab = 0)
+plot(res.hcpc, choice = "3D.map")

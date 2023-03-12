@@ -112,19 +112,24 @@ s.class(acm$li, hdv2003$relig)
 fviz_mca_ind(acm, geom = "point", habillage = hdv2003$relig) # cela marche aussi avec "habillahe" à condition de ne pas changer l'ordre des individus !
 # Résumer l'information pour toutes les variables
 scatter(acm)
-scatter(acm, col = RColorBrewer::brewer.pal(5, "Set1"))
+# plettes de couleurs : https://www.datanovia.com/en/fr/blog/palette-de-couleurs-rcolorbrewer-de-a-a-z/ 
+scatter(acm, col = RColorBrewer::brewer.pal(5, "Set1")) # sortir 5 couleurs de la palette "set1"
+scatter(acm, col = RColorBrewer::brewer.pal(n = 8, name = "Dark2")) # sortir 8 couleurs de la palette "Dark2"
 
 # ACM alternative 
 d3 <- hdv2003 %>%
   select(peche.chasse, cinema, cuisine, bricol, sport, lecture.bd)
 acm2 <- dudi.acm(d3, scannf = FALSE, nf = Inf)
 
+# explor::explor(acm2)
+
+# visualisation avec les variables sociodémographiques
 fviz_mca_ind(acm2, geom = "point", habillage = hdv2003$sexe, addEllipses = TRUE)
-
 fviz_mca_ind(acm2, geom = "point", habillage = hdv2003$grpage, addEllipses = TRUE)
-
+# Visualisation globale
 scatter(acm2, col = RColorBrewer::brewer.pal(5, "Set1"))
 
 # Variables supplémentaires avec FactorMineR
-
-acm3 <- MCA(d2, quali.sup = 1:3)
+acm3 <- MCA(d2) # ACM
+# ACM avec les variables supplémentaires 
+acm3 <- MCA(d2, quali.sup = 1:3) # on a la représentation de la corrélation des variables avec les axes
