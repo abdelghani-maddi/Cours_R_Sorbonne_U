@@ -8,6 +8,8 @@ data(hdv2003)
 library(tidyverse)
 library(gtsummary)
 library(GGally)
+library(FactoMineR)
+
 
 ## Recodage de hdv2003$age en hdv2003$groupe_age
 hdv2003$groupe_age <- cut(hdv2003$age,
@@ -72,6 +74,8 @@ library(WeightedCluster)
 as.clustrange(arbre, md) %>% plot()
 as.clustrange(arbre_gower, md_gower) %>% plot()
 
+
+
 hdv2003$typo <- cutree(arbre, 3)
 hdv2003$typo_gower <- cutree(arbre_gower, 3)
 
@@ -90,3 +94,9 @@ ggtable(
   fill = "std.resid",
   legend = 1
 )
+
+## 3D
+library(FactoMineR)
+ACM <- MCA(d2)
+res.hcpc <- HCPC(ACM, graph = FALSE)
+plot(res.hcpc, choice = "3D.map", ann = F, cex.lab = 0)
