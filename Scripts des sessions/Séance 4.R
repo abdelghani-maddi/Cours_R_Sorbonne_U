@@ -83,7 +83,10 @@ hdv2003$typo_gower <- cutree(arbre_gower, 3) # même chose pour gower
 
 # Soit faire un tbl_summary
 hdv2003 %>%
-  tbl_summary(include = c(names(d2), "typo"), by = "typo")
+  tbl_summary(include = c(names(d2), "typo"), by = "typo") %>%
+  add_p() %>%
+  separate_p_footnotes()
+              
 
 # ou bien utiliser ggtable :
 hdv2003$typo <- factor(hdv2003$typo) # transfomer d'abord en facteur
