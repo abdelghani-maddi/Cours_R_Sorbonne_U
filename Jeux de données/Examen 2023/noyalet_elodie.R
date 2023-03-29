@@ -8,7 +8,7 @@ data <- presid2002$tour2
 
 # Description du jeu de données :
 
-# Cet ensemble de données donne les résultats du 1er tour de l'élection présidentielle en
+# Cet ensemble de données donne les résultats du 2e tour de l'élection présidentielle en
 # France en 2002 pour chaque département (94 départements en lignes) et tous les candidats.
 # 
 # Le tableau contient les colonnes suivantes :
