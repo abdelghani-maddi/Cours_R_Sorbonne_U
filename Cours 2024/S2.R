@@ -24,6 +24,22 @@ d |> look_for("sexe")
 
 # Préparation des données ----
 
+# sans le pipe
+v <- c(1.2, 8.7, 5.6, 11.4)
+m <- mean(v)
+r <- round(m, digits = 1)
+f <- format(r, decimal.mark = ",")
+p <- paste0("La moyenne est de ", f, ".")
+message(p)
+
+# plus simple avec le pipe !
+v |> 
+  mean() |> 
+  round(digits = 1) |> 
+  format(decimal.mark = ",") |> 
+  paste0("La moyenne est de ", m = _, ".") |> 
+  message()
+
 library(tidyverse)
 d <- d |> 
   mutate(sexe = sexe |> fct_relevel("Femme"))

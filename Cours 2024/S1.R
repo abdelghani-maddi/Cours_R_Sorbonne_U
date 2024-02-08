@@ -1,100 +1,85 @@
 ########################################
+# Séance 1 R et Rstudio
+# Cours Maddi
 # https://larmarange.github.io/guide-R/analyses/statistique-bivariee.html
 ########################################
-rm(list=ls())
+
+# Nettoyer espace de travail ----
+# rm(list=ls())
+
 # Lancement des packages ----
-# library(questionr)
-# library(openxlsx)
-# install.packages("codebook")
-# install.packages("gtsummary")
-# library(tidyverse)
-# library(gtsummary)
-# library(labelled)
+library(questionr)
+library(openxlsx) # pour lire et enregistrer des fichier excel
+library(tidyverse)
+library(gtsummary)
+library(labelled)
 
 
 # Chargement des données ----
-# data(hdv2003)
-# write.xlsx(hdv2003, "hdv2003.xlsx")
+data(hdv2003)
+write.xlsx(hdv2003, "hdv2003.xlsx")
 
 # Inspection générale des données ----
 # summary
+summary(hdv2003$age)
+summary(hdv2003$qualif)
+summary(hdv2003)
+
 # str
+str(hdv2003)
+
 # glimpse
+library(dplyr)
+glimpse(hdv2003)
+
+
 # look_for
+library(labelled)
+look_for(hdv2003)
+
+look_for(hdv2003, "trav")
+look_for(femmes, "rés")
+look_for(femmes, "rés", "nb")
+
 # describe
+describe(hdv2003)
+describe(hdv2003, "age", "trav")
+describe(hdv2003$sexe)
+
 # codebook
+codebook::label_browser_static(femmes)
+
 
 # Étiquettes de variables ----
-# var_label(hdv2003$occup) = "Occupation actuelle"
-# var_label(hdv2003$age) = "Âge de la personne"
-# labelled::set_variable_labels()
+var_label(hdv2003$occup) = "Occupation actuelle"
+var_label(hdv2003$age) = "Âge de la personne"
 
 # Factors ----
-# class(hdv2003$qualif)
-# levels(hdv2003$qualif)
-# hdv2003$qualif |> 
-#   fct_relevel("Cadre", "Autre", "Technicien", "Employe") |> 
-#   questionr::freq()
-# Usage du adin pour ordonner les variables
+class(hdv2003$qualif)
+levels(hdv2003$qualif)
+hdv2003$qualif |>
+  fct_relevel("Cadre", "Autre", "Technicien", "Employe") |>
+  questionr::freq()
 
 
-# Modifier les modalités : usage du adin ----
-# Descritiser une variable : usage du adin ----
+# Représentations graphiques (usage de ESQUISSE) ----
+library(questionr)
+data(hdv2003)
 
-# Tableaux et tris à plat ----
-# hdv2003 %>% 
-#   tbl_summary(
-#     include = c(age, occup, heures.tv),
-#     label = list(age ~ "Âge médian")
-#   )
+library(ggplot2)
 
-# hdv2003 |>
-#   tbl_summary(
-#     include = c(age, heures.tv),
-#     statistic = 
-#       all_continuous() ~ "Moy. : {mean} [min-max : {min} - {max}]"
-#   )
+ggplot(hdv2003) +
+ aes(x = age, y = nivetud) +
+ geom_boxplot(fill = "#112446") +
+ theme_minimal()
 
 
-# Tableau croisé avec gtsummary ----
-# library(gtsummary)
-# theme_gtsummary_language("fr", decimal.mark = ',')
-# data("trial")
+library(dplyr)
 
-# library(gtsummary)
-# trial |> 
-#   tbl_summary(
-#     include = c(stage, trt),
-#     by = grade,
-#     statistic = ~ "{p}% ({n}/{N})",
-#     percent = "row"
-#   ) |> 
-#   add_overall(last = TRUE)
-
-
-# Croiser deux variables : simple pour 2 var
-# trial |> 
-#   tbl_cross(
-#     row = stage,
-#     col = grade,
-#     percent = "row"
-#   )
-
-
-# Test du Chi² et dérivés
-# trial |> 
-#   tbl_summary(
-#     include = stage,
-#     by = grade
-#   ) |> 
-#   add_p()
-
-# Comparaison de deux proportions
-# trial |> 
-#   tbl_summary(
-#     by = trt,
-#     include = response
-#   ) |> 
-#   add_difference()
-
-# Représentations graphiques
+hdv2003 %>%
+ filter(!is.na(nivetud)) %>%
+ ggplot() +
+ aes(x = nivetud, fill = sexe) +
+ geom_bar(position = "dodge") +
+ scale_fill_hue(direction = 1) +
+ theme_minimal()
