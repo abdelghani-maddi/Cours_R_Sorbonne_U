@@ -1,7 +1,7 @@
 ########################################
 # https://larmarange.github.io/guide-R/analyses/statistique-bivariee.html
 ########################################
-
+rm(list=ls())
 # Lancement des packages ----
 # library(questionr)
 # library(openxlsx)
