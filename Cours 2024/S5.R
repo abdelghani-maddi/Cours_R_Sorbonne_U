@@ -52,7 +52,7 @@ d2 <- hdv2003 %>%
 
 # le mieux :
 acm <- dudi.acm(d2, scannf = FALSE, nf = Inf)
-#explor::explor(acm)
+# explor::explor(acm)
 screeplot(acm) # autre façon de représenter graph des axes
 
 ##
@@ -95,11 +95,14 @@ par(mfrow = c(1, 1)) # à remettre pour ne pas afficher le reste des graphiques 
 fviz_mca_ind(acm, geom ="point", alpha.ind = .25)
 
 
-# devtools::install_github("larmarange/JLutils")
-library(JLutils)
-s.freq(acm$li) # La taille des carrés représente le nombre d'observations, plutôt que simplement des point de même taille
+# # devtools::install_github("larmarange/JLutils")
+# library(JLutils)
+# s.freq(acm$li) # La taille des carrés représente le nombre d'observations, plutôt que simplement des point de même taille
+
+
 # Une autre façon intéressante
 s.hist(acm$li, clabel = 0, pch = 15)
+
 # représentation qui lie les observations aux barycentes :
 s.class(acm$li, d2$sexe)
 s.class(acm$li, d2$sexe, col = c("red", "darkgreen"))
@@ -112,11 +115,12 @@ fviz_mca_ind(acm, geom = "point", habillage = d2$sexe, addEllipses = TRUE)
 # Variables supplémentaires / illustratives
 s.class(acm$li, hdv2003$relig)
 fviz_mca_ind(acm, geom = "point", habillage = hdv2003$relig) # cela marche aussi avec "habillahe" à condition de ne pas changer l'ordre des individus !
+
 # Résumer l'information pour toutes les variables
 scatter(acm)
 # plettes de couleurs : https://www.datanovia.com/en/fr/blog/palette-de-couleurs-rcolorbrewer-de-a-a-z/ 
 scatter(acm, col = RColorBrewer::brewer.pal(5, "Set1")) # sortir 5 couleurs de la palette "set1"
-scatter(acm, col = RColorBrewer::brewer.pal(n = 8, name = "Dark2")) # sortir 8 couleurs de la palette "Dark2"
+scatter(acm, col = RColorBrewer::brewer.pal(n = 4, name = "Dark2")) # sortir 8 couleurs de la palette "Dark2"
 
 # ACM alternative 
 d3 <- hdv2003 %>%
@@ -150,12 +154,12 @@ acm3 <- MCA(d2, quali.sup = 1:3) # on a la représentation de la corrélation de
   #   Script et sorties R permettant de retrouver les graphes et sorties du cours.
   # Le jeu de données doit être téléchargé et sauvegardé dans un répertoire connu (dans mon cas, le fichier a été sauvegardé dans le répertoire "C:/husson"").
   
-  library(FactoMineR)
+library(FactoMineR)
 
 # Importation des données
 library(readxl)
 temperature <- read_excel("Jeux de données/AnaDo_JeuDonnees_TemperatFrance.xlsx")
-
+class(temperature)
 temperature <- data.frame(temperature)
 rownames(temperature) <- temperature[,1]
 temperature <- temperature[,-1]
@@ -192,7 +196,7 @@ arbre <- hclust(md, method = "ward.D2")
 arbre_gower <- hclust(md_gower, method = "ward.D2")
 
 # Représenter le dendrogramme
-plot(arbre, labels = FALSE)
+plot(arbre)
 rect.hclust(arbre, 2, border = "red")
 rect.hclust(arbre, 5, border = "blue")
 
@@ -201,7 +205,7 @@ library(dendextend)
 color_branches(arbre, k = 5) %>% ggplot(labels = FALSE)
 
 library(factoextra)
-fviz_dend(arbre, k = 5, show_labels = FALSE, rect = TRUE)
+fviz_dend(arbre, k = 5, show_labels = TRUE, rect = TRUE)
 
 # saut d'inertie
 inertie <- sort(arbre$height, decreasing = TRUE)
