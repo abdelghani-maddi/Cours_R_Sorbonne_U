@@ -1,7 +1,13 @@
-# Sujet de : Pasquet Louis
-# Jeu de données
+# Examen 2024
+# Cours de R et Rstudio
+# M Maddi
 
+# Sujet 4
+
+# Package :
 library(ade4) 
+
+# Données :
 data(elec88)
 data <- elec88$tab
 
@@ -17,4 +23,5 @@ data <- elec88$tab
 # vus en cours (statistiques descriptives, analyse factorielle et classification)
 
 
-# Question : analyser et decrire les données avec les outils vus en cours (statistiques descriptives, analyse factorielle et classification)
+# Question : analyser et decrire les données avec les outils vus en cours 
+# (statistiques descriptives, analyse factorielle et classification)
