@@ -38,8 +38,6 @@ library(labelled)
 look_for(hdv2003)
 
 look_for(hdv2003, "trav")
-look_for(femmes, "rés")
-look_for(femmes, "rés", "nb")
 
 # describe
 describe(hdv2003)

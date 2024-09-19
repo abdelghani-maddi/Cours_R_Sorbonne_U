@@ -17,6 +17,11 @@
 
 # install.packages("questionr")
 library(questionr)
+library(questionr)
+library(openxlsx) # pour lire et enregistrer des fichier excel
+library(tidyverse)
+library(gtsummary)
+library(labelled)
 
 # 2. Importation des données (20 min) ----
 # Concepts abordés :
@@ -26,6 +31,8 @@ library(questionr)
 # Exemple d'importation :
 
 data(hdv2003)
+write.xlsx(hdv2003, "hdv2003.xlsx")
+
 
 # Les données sont intégrées dans le package et accessibles directement via data().
 # Présentation des différentes fonctions pour importer d’autres formats de données :
@@ -57,6 +64,38 @@ summary(hdv2003)   # Résumé statistique des variables
 # Le nombre de variables (colonnes).
 # Les types de variables (numériques, catégorielles, etc.).
 
+# Inspection générale des données ----
+# summary
+summary(hdv2003$age)
+summary(hdv2003$qualif)
+summary(hdv2003)
+
+# str
+str(hdv2003)
+
+# glimpse
+library(dplyr)
+glimpse(hdv2003)
+
+
+# look_for
+library(labelled)
+look_for(hdv2003)
+
+look_for(hdv2003, "trav")
+
+# describe
+describe(hdv2003)
+describe(hdv2003, "age", "trav")
+describe(hdv2003$sexe)
+
+# codebook
+codebook::label_browser_static(hdv2003)
+
+
+# Étiquettes de variables ----
+var_label(hdv2003$occup) = "Occupation actuelle"
+var_label(hdv2003$age) = "Âge de la personne"
 
 # 4. Exploration des variables : Aperçu et nettoyage (30 min) -----
 # 
@@ -124,3 +163,7 @@ boxplot(age ~ sexe, data = hdv2003)
 # 
 # Matériel de soutien :
 # Fichier RMarkdown contenant tout le code vu en séance.
+
+
+
+# 
