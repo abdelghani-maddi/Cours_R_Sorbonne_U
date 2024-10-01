@@ -67,3 +67,76 @@ ggplot(hdv_jeunes_counts) +
   geom_col(position = "dodge2") +  # Barres côte à côte pour comparer les sexes
   scale_fill_hue(direction = 1) +  # Palette de couleurs pour différencier les groupes
   theme_minimal()                  # Thème minimaliste pour une meilleure lisibilité
+
+
+########################################
+# Dossier 1 
+# Cours Maddi - Cas d'étude 2
+########################################
+
+# Nettoyer l'espace de travail ----
+# rm(list=ls())
+
+# Lancement des packages ----
+library(questionr)
+library(openxlsx)
+library(tidyverse)
+library(gtsummary)
+library(labelled)
+
+# Chargement des données ----
+data(hdv2003)
+
+# Travail sur les données ----
+
+## Étape 1 : Filtrer les individus ayant un niveau d'éducation renseigné
+# Exclure les observations où 'nivetud' est manquant
+hdv_educ <- hdv2003 %>%
+  filter(!is.na(nivetud) & !is.na(qualif))
+
+## Étape 2 : Créer une nouvelle variable 'cat_nivetud' pour regrouper le niveau d'études
+# Nous regroupons les niveaux d'études en trois catégories : Primaire, Secondaire, Universitaire.
+## Recodage de hdv_educ$nivetud en hdv_educ$cat_nivetud
+hdv_educ$cat_nivetud <- hdv_educ$nivetud %>%
+  fct_recode(
+    "Primaire" = "N'a jamais fait d'etudes",
+    "Primaire" = "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+    "Primaire" = "Derniere annee d'etudes primaires",
+    "Secondaire" = "1er cycle",
+    "Secondaire" = "2eme cycle",
+    "Supérieur" = "Enseignement technique ou professionnel court",
+    "Supérieur" = "Enseignement technique ou professionnel long",
+    "Supérieur" = "Enseignement superieur y compris technique superieur"
+  )
+
+# Supprimer les individus avec une valeur manquante pour 'cat_nivetud'
+hdv_educ <- hdv_educ %>%
+  filter(!is.na(cat_nivetud))
+
+## Étape 3 : Sélectionner les colonnes 'id', 'cat_nivetud' (niveau d'études) et 'profession', puis enlever les doublons
+hdv_educ <- hdv_educ %>%
+  select(id, cat_nivetud, qualif) %>%
+  distinct()
+
+## Étape 4 : Regrouper par niveau d'études et profession, et compter le nombre d'individus dans chaque groupe
+hdv_educ_counts <- hdv_educ %>%
+  group_by(cat_nivetud, qualif) %>%
+  summarise(nbr = n())
+
+## Étape 5 : Calculer la proportion de chaque groupe
+total_nbr_educ <- sum(hdv_educ_counts$nbr)
+
+hdv_educ_counts <- hdv_educ_counts %>%
+  mutate(part = (nbr / total_nbr_educ) * 100)
+
+# Visualiser la répartition par niveau d'éducation et profession
+ggplot(hdv_educ_counts) +
+  aes(x = cat_nivetud, y = part, fill = qualif) +
+  geom_col(position = "dodge2") +  # Barres côte à côte pour comparer les professions
+  scale_fill_hue(direction = 1) +  # Palette de couleurs pour différencier les groupes
+  theme_minimal() +                # Thème minimaliste pour une meilleure lisibilité
+  labs(
+    title = "Répartition des statuts professionnels par niveau d'études",
+    x = "Niveau d'études",
+    y = "Proportion (%)"
+  )
