@@ -20,83 +20,99 @@ library(labelled)    # Pour la gestion des labels dans les données
 data(hdv2003)
 
 # Travail sur les données ----
-# Nous allons filtrer et analyser les jeunes de 25 ans ou moins, et étudier la répartition par sexe et occupation.
+# Nous allons analyser la répartition des occupations selon les tranches d'âge.
 
-## Étape 1 : Filtrer les jeunes de 25 ans ou moins
-# Cette étape consiste à isoler les individus âgés de 25 ans ou moins à partir des données hdv2003.
-hdv_jeunes <- hdv2003 %>%
-  filter(age <= 25)
+# Créer les tranches d'âge ----
+# Nous découpons la variable 'age' en tranches en utilisant la fonction 'cut'.
+# Les tranches sont définies pour les âges : 18-30, 30-40, 40-50, 50-64 et 64-97.
+hdv2003$age_rec <- cut(hdv2003$age,
+                       include.lowest = TRUE,  # Inclure la limite inférieure dans la première tranche
+                       right = FALSE,          # La borne supérieure est exclue de la tranche
+                       dig.lab = 4,            # Nombre de chiffres à utiliser pour les labels
+                       breaks = c(18, 30, 40, 50, 64, 97)  # Bornes des tranches d'âge
+)
 
-## Étape 2 : Sélectionner les colonnes 'id', 'sexe' et 'occup', puis enlever les doublons
-# Nous ne conservons que les variables pertinentes : identifiant (id), sexe et occupation.
-# Nous supprimons également les doublons pour éviter les répétitions inutiles.
-hdv_jeunes <- hdv_jeunes %>%
-  select(id, sexe, occup) %>%
-  distinct()
-
-## Étape 3 : Compter le nombre d'observations par sexe et occupation
-# Nous allons regrouper les données par sexe et occupation, puis compter le nombre d'individus dans chaque catégorie.
-hdv_jeunes_counts <- hdv_jeunes %>%
-  group_by(sexe, occup) %>%
-  summarise(nbr = n())
-
-## Étape 4 : Calculer la proportion de chaque groupe
-# Ici, nous calculons la proportion de chaque groupe par rapport au total des jeunes de 25 ans ou moins.
-total_nbr <- sum(hdv_jeunes_counts$nbr)
-
-hdv_jeunes_counts <- hdv_jeunes_counts %>%
-  mutate(part = (nbr / total_nbr) * 100)
-
-# Résultat : Nous avons maintenant la répartition des jeunes par sexe et occupation, ainsi que leur proportion.
-
-# Ou bien de façon plus compacte :
-# Cette approche compacte combine toutes les étapes en une seule opération fluide.
-hdv_jeunes_counts <- hdv2003 %>%
-  filter(age <= 25) %>%
-  select(id, sexe, occup) %>%
-  distinct() %>%
-  group_by(sexe, occup) %>%
-  summarise(nbr = n()) %>%
-  ungroup() %>%
-  mutate(part = nbr / sum(nbr) * 100)  # Proportion des groupes calculée sur l'ensemble
+# Calcul des proportions d'occupation par tranche d'âge ----
+# Nous sélectionnons les colonnes d'intérêt, supprimons les doublons, et comptons les individus dans chaque groupe d'âge et d'occupation.
+hdv_age_counts <- hdv2003 %>%
+  select(id, age_rec, occup) %>%    # Sélection des colonnes 'id', 'age_rec' (tranches d'âge) et 'occup' (occupation)
+  distinct() %>%                    # Retrait des doublons pour éviter les répétitions
+  group_by(age_rec, occup) %>%       # Regroupement par tranche d'âge et occupation
+  summarise(nbr = n()) %>%           # Comptage du nombre d'individus dans chaque groupe
+  group_by(age_rec) %>%              # Regroupement par tranche d'âge pour calculer les proportions
+  mutate(part = nbr / sum(nbr) * 100)  # Calcul de la proportion (%) d'occupation par tranche d'âge
 
 # Représentation graphique ----
-# Nous visualisons maintenant les résultats avec un graphique en barres.
-ggplot(hdv_jeunes_counts) +
-  aes(x = occup, y = part, fill = sexe) +
-  geom_col(position = "dodge2") +  # Barres côte à côte pour comparer les sexes
-  scale_fill_hue(direction = 1) +  # Palette de couleurs pour différencier les groupes
-  theme_minimal()                  # Thème minimaliste pour une meilleure lisibilité
+# Nous visualisons la répartition des occupations par tranche d'âge à l'aide d'un graphique en barres.
+ggplot(hdv_age_counts) +
+  aes(x = age_rec, y = part, fill = occup) +  # Tranche d'âge en x, proportion en y, occupation comme couleur
+  geom_col(position = "dodge2") +             # Barres côte à côte pour mieux comparer les occupations
+  scale_fill_hue(direction = 1) +             # Palette de couleurs pour différencier les occupations
+  theme_minimal() +                           # Utilisation d'un thème minimaliste pour améliorer la lisibilité
+  labs(
+    title = "Répartition des occupations selon les tranches d'âge",  # Titre du graphique
+    x = "Tranche d'âge",                                             # Label de l'axe des x
+    y = "Proportion (%)"                                             # Label de l'axe des y
+  )
+
+# # Réordonner les occupations par proportion dans chaque tranche d'âge ----
+# hdv_age_counts <- hdv_age_counts %>%
+#   group_by(age_rec) %>%
+#   mutate(occup = fct_reorder(occup, part, .desc = TRUE))  # Reordonne par proportion décroissante
+
+
+# Utilisation de fct_reorder pour trier les occupations dans l'ordre décroissant des proportions.
+ggplot(hdv_age_counts) +
+  aes(x = (age_rec), y = part, fill = occup) +  # fct_reorder pour ordonner décroissant
+  geom_col(position = "dodge2") + 
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  labs(
+    title = "Répartition des occupations selon les tranches d'âge",
+    x = "Occupation",
+    y = "Proportion (%)"
+  )
 
 
 ########################################
+########################################
+########################################
+
 # Dossier 1 
 # Cours Maddi - Cas d'étude 2
+
+########################################
+########################################
+########################################
 ########################################
 
+
 # Nettoyer l'espace de travail ----
+# Utilisez cette ligne pour effacer les objets dans votre environnement si nécessaire.
 # rm(list=ls())
 
 # Lancement des packages ----
-library(questionr)
-library(openxlsx)
-library(tidyverse)
-library(gtsummary)
-library(labelled)
+# Nous chargeons les packages nécessaires pour manipuler, analyser et présenter les données.
+library(questionr)   # Pour accéder aux jeux de données d'enquêtes
+library(openxlsx)    # Pour manipuler les fichiers Excel
+library(tidyverse)   # Pour la manipulation des données et visualisation
+library(gtsummary)   # Pour générer des résumés statistiques
+library(labelled)    # Pour la gestion des labels dans les données
 
 # Chargement des données ----
+# Nous utilisons le jeu de données 'hdv2003' disponible dans le package questionr.
 data(hdv2003)
 
 # Travail sur les données ----
+# Nous allons étudier la répartition des qualifications professionnelles selon le niveau d'éducation.
 
-## Étape 1 : Filtrer les individus ayant un niveau d'éducation renseigné
-# Exclure les observations où 'nivetud' est manquant
+# Étape 1 : Filtrage des données ----
+# Nous conservons uniquement les individus ayant renseigné leur niveau d'éducation ('nivetud') et leur qualification professionnelle ('qualif').
 hdv_educ <- hdv2003 %>%
-  filter(!is.na(nivetud) & !is.na(qualif))
+  filter(!is.na(nivetud) & !is.na(qualif))  # Exclusion des individus avec des valeurs manquantes
 
-## Étape 2 : Créer une nouvelle variable 'cat_nivetud' pour regrouper le niveau d'études
-# Nous regroupons les niveaux d'études en trois catégories : Primaire, Secondaire, Universitaire.
-## Recodage de hdv_educ$nivetud en hdv_educ$cat_nivetud
+# Étape 2 : Création des catégories de niveau d'études ----
+# Nous regroupons les niveaux d'études en trois grandes catégories : 'Primaire', 'Secondaire', et 'Supérieur'.
 hdv_educ$cat_nivetud <- hdv_educ$nivetud %>%
   fct_recode(
     "Primaire" = "N'a jamais fait d'etudes",
@@ -109,34 +125,24 @@ hdv_educ$cat_nivetud <- hdv_educ$nivetud %>%
     "Supérieur" = "Enseignement superieur y compris technique superieur"
   )
 
-# Supprimer les individus avec une valeur manquante pour 'cat_nivetud'
-hdv_educ <- hdv_educ %>%
-  filter(!is.na(cat_nivetud))
-
-## Étape 3 : Sélectionner les colonnes 'id', 'cat_nivetud' (niveau d'études) et 'profession', puis enlever les doublons
-hdv_educ <- hdv_educ %>%
-  select(id, cat_nivetud, qualif) %>%
-  distinct()
-
-## Étape 4 : Regrouper par niveau d'études et profession, et compter le nombre d'individus dans chaque groupe
+# Étape 3 : Comptage des individus par catégorie de niveau d'études et profession ----
+# Nous comptons le nombre d'individus dans chaque combinaison de niveau d'études et profession.
 hdv_educ_counts <- hdv_educ %>%
-  group_by(cat_nivetud, qualif) %>%
-  summarise(nbr = n())
+  select(id, cat_nivetud, qualif) %>%  # Sélection des colonnes 'id', 'cat_nivetud' (catégorie de niveau d'études) et 'qualif' (profession)
+  distinct() %>%                       # Retrait des doublons
+  group_by(cat_nivetud, qualif) %>%     # Regroupement par niveau d'études et profession
+  summarise(nbr = n()) %>%              # Comptage des individus dans chaque groupe
+  mutate(part = (nbr / sum(nbr)) * 100)  # Calcul de la proportion (%) d'individus dans chaque groupe
 
-## Étape 5 : Calculer la proportion de chaque groupe
-total_nbr_educ <- sum(hdv_educ_counts$nbr)
-
-hdv_educ_counts <- hdv_educ_counts %>%
-  mutate(part = (nbr / total_nbr_educ) * 100)
-
-# Visualiser la répartition par niveau d'éducation et profession
+# Représentation graphique ----
+# Nous visualisons la répartition des professions par niveau d'éducation à l'aide d'un graphique en barres.
 ggplot(hdv_educ_counts) +
-  aes(x = cat_nivetud, y = part, fill = qualif) +
-  geom_col(position = "dodge2") +  # Barres côte à côte pour comparer les professions
-  scale_fill_hue(direction = 1) +  # Palette de couleurs pour différencier les groupes
-  theme_minimal() +                # Thème minimaliste pour une meilleure lisibilité
+  aes(x = cat_nivetud, y = part, fill = qualif) +  # Niveau d'éducation en x, proportion en y, profession comme couleur
+  geom_col(position = "dodge2") +                 # Barres côte à côte pour comparer les professions
+  scale_fill_hue(direction = 1) +                 # Palette de couleurs pour différencier les professions
+  theme_minimal() +                               # Utilisation d'un thème minimaliste
   labs(
-    title = "Répartition des statuts professionnels par niveau d'études",
-    x = "Niveau d'études",
-    y = "Proportion (%)"
+    title = "Répartition des statuts professionnels par niveau d'études",  # Titre du graphique
+    x = "Niveau d'études",                                                 # Label de l'axe des x
+    y = "Proportion (%)"                                                   # Label de l'axe des y
   )
