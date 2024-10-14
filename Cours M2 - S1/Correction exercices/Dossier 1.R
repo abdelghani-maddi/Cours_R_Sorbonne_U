@@ -40,7 +40,8 @@ hdv_age_counts <- hdv2003 %>%
   group_by(age_rec, occup) %>%       # Regroupement par tranche d'âge et occupation
   summarise(nbr = n()) %>%           # Comptage du nombre d'individus dans chaque groupe
   group_by(age_rec) %>%              # Regroupement par tranche d'âge pour calculer les proportions
-  mutate(part = nbr / sum(nbr) * 100)  # Calcul de la proportion (%) d'occupation par tranche d'âge
+  mutate(part = nbr/sum(nbr) * 100)  # Calcul de la proportion (%) d'occupation par tranche d'âge
+
 
 # Représentation graphique ----
 # Nous visualisons la répartition des occupations par tranche d'âge à l'aide d'un graphique en barres.
@@ -125,7 +126,7 @@ hdv_educ$cat_nivetud <- hdv_educ$nivetud %>%
     "Supérieur" = "Enseignement superieur y compris technique superieur"
   )
 
-# Étape 3 : Comptage des individus par catégorie de niveau d'études et profession ----
+# Étape 3 : Comptage des individus par catégo rie de niveau d'études et profession ----
 # Nous comptons le nombre d'individus dans chaque combinaison de niveau d'études et profession.
 hdv_educ_counts <- hdv_educ %>%
   select(id, cat_nivetud, qualif) %>%  # Sélection des colonnes 'id', 'cat_nivetud' (catégorie de niveau d'études) et 'qualif' (profession)
