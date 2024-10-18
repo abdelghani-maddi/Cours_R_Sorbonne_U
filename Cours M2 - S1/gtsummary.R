@@ -1,3 +1,5 @@
+# Source : https://raw.githubusercontent.com/larmarange/webin-R/main/_posts/2021-12-13-tableaux-statistiques-avec-gtsummary/gtsummary.R
+
 library(gtsummary)
 library(labelled)
 library(tidyverse)
