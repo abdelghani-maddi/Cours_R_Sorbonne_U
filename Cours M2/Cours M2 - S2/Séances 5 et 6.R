@@ -2,6 +2,12 @@
 library(survey)
 library(tidyverse)
 library(arules)
+library(gtsummary)
+library(questionr)
+library(GGally)
+library(effects)    # Pour calculer et visualiser les effets marginaux
+library(ggeffects)  # Pour visualiser les effets marginaux des modèles
+
 # Description des données https://search.r-project.org/CRAN/refmans/arules/html/Income.html
 # Charger le jeu de données 'income' du package 'survey'
 data(IncomeESL)
@@ -67,7 +73,9 @@ ggplot(IncomeESL, aes(x = education, fill = high_income)) +
 # Nous allons prédire la probabilité d'avoir un revenu élevé (high_income)
 # en fonction de quelques variables explicatives. Ici, nous utilisons sex, age, education, occupation et marital.status.
 
-mod <- glm(high_income ~ sex + age + education + occupation + `marital status`,
+IncomeESL$householder_status <- IncomeESL$`householder status`
+
+mod <- glm(high_income ~ sex + age + education + occupation + householder_status,
              data = IncomeESL,
              family = binomial())
 
@@ -95,16 +103,93 @@ ggeffect(mod) %>%
   plot() %>%
   cowplot::plot_grid(plotlist = .)  # Utilisation de 'cowplot' pour organiser les graphiques
 
-# 8. Conclusion
-# Ce script complet a permis de :
-# - Charger et explorer le jeu de données IncomeESL
-# - Créer une variable binaire "high_income" basée sur les niveaux de revenu
-# - Réaliser une analyse descriptive et visualiser les distributions selon certaines variables
-# - Ajuster un modèle de régression logistique pour prédire la probabilité d'avoir un revenu élevé
-# - Évaluer le modèle via la courbe ROC (AUC) et une validation croisée (Train/Test)
-# L'interprétation des coefficients suggère quels facteurs (sexe, âge, éducation, occupation, statut marital)
-# influencent la probabilité d'avoir un revenu élevé. Par exemple, une éducation plus élevée ou
-# une occupation professionnelle peuvent augmenter les chances d'appartenir à la catégorie "High".
+## Effets marginaux ------
+# Les effets marginaux représentent l'impact moyen d'une variation dans une variable sur la probabilité de l'événement (ici, pratiquer un sport).
+mod %>% allEffects() %>% plot()
+
+# Visualisation des effets marginaux avec ggeffects
+ggeffect(mod) %>% 
+  plot() %>%
+  cowplot::plot_grid(plotlist = .)
+
+## Effet global de chaque variable ------
+# Analyse de l'effet global de chaque variable pour comprendre leur influence sur la probabilité de pratiquer un sport.
+mod %>% 
+  tbl_regression(
+    intercept = TRUE,
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) %>%
+  add_global_p(keep = TRUE)  # Ajoute un test global pour chaque variable
+
+## Sélection pas à pas descendante ------
+# Sélection des variables par la méthode pas à pas descendante (stepwise) pour simplifier le modèle.
+mod2 <- step(mod)
+
+
+# Visualisation des résultats du modèle simplifié
+mod2 %>% ggcoef_model()
+
+# Comparaison entre le modèle complet et le modèle simplifié
+ggcoef_compare(
+  list("modèle complet" = mod, "modèle simplifié" = mod2),
+  exponentiate = TRUE,
+  type = "f"
+)
+
+# Résumé des deux modèles (complet et simplifié) dans une table pour comparaison
+t1 <- mod %>% 
+  tbl_regression(exponentiate = TRUE, add_estimate_to_reference_row = TRUE) %>% 
+  add_global_p()
+t2 <- mod2 %>% 
+  tbl_regression(exponentiate = TRUE, add_estimate_to_reference_row = TRUE) %>% 
+  add_global_p()
+
+tbl_merge(
+  tbls = list(t1, t2),
+  tab_spanner = c("**Modèle complet**", "**Modèle simplifié**")
+)
+
+## Interaction sexe et âge -----
+# On teste s'il y a une interaction entre le sexe et le groupe d'âge, pour savoir si l'effet de l'âge varie en fonction du sexe.
+mod3 <- glm(high_income ~ sex * age + education + occupation + householder_status,
+           data = IncomeESL,
+           family = binomial())
+
+# Résumé du modèle avec l'interaction sexe * âge
+mod3 %>% tbl_regression() %>% add_global_p()
+
+# Visualisation des coefficients du modèle avec interaction
+ggcoef_model(mod3)
+
+# Visualisation des effets marginaux pour l'interaction sexe * âge
+plot(allEffects(mod3))
+
+# Effet des variables sexe et groupe_age avec ggeffects
+mod3 %>%
+  ggeffect(c("age", "sex")) %>%
+  plot()
+
+# Régression avec interaction dans une autre formulation
+mod4 <- glm(high_income ~ sex + education + occupation +  age * householder_status,
+            data = IncomeESL,
+            family = binomial)
+
+ggcoef_model(mod4)
+mod4 %>%
+  ggeffect(c("age", "householder_status")) %>%
+  plot()
+
+
+
+# Anova pour tester l'importance de cette interaction
+car::Anova(mod4)
+
+## Y a-t-il un risque de multicolinéarité ?
+# On vérifie s'il existe un risque de multicolinéarité entre les variables explicatives à l'aide du VIF (Variance Inflation Factor).
+car::vif(mod)
+
+# Si nécessaire, la fonction add_vif() sera disponible dans une version future de gtsummary.
 
 # =============================================================================
 # FIN DU SCRIPT

@@ -1,7 +1,7 @@
 #' ---
 #' title: "Analyse de la pratique du sport (hdv2003)"
 #' ---
-
+rm(list=ls())
 #' # Mise en place
 
 ## Chargement des données et des packages ----
