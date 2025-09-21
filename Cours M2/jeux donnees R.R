@@ -1,9 +1,24 @@
+# Liste tous les jeux de données disponibles dans les packages installés
+
+available_datasets <- data(package = .packages(all.available = TRUE))$results[, c("Package", "Item", "Title")] 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Obtenir la liste des jeux de données disponibles
 data_list <- data()
 
 # Transformer en tibble pour un affichage plus clair
-library(tibble)
 dataset_table <- as_tibble(data_list$results[, c("Item", "Package", "Title")])
 
 # Renommer les colonnes
