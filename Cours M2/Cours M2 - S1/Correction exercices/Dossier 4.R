@@ -45,7 +45,7 @@ rp2018 %>%
   filter(pop_tot > 100000) %>% 
   select(commune, departement, pop_tot)
 
-
+write.xlsx(rp2018, "D:/rp2018.xlsx")
 # 💬 Discussion sociologique : Les grandes villes sont-elles forcément plus touchées par le chômage que les petites ?
 #   
 #   3. arrange() – trier
@@ -92,6 +92,17 @@ rp2018 %>%
   group_by(region) %>% 
   summarise(chom_moy = mean(chom, na.rm = TRUE)) %>% 
   arrange(desc(chom_moy))
+
+
+library(dplyr)
+
+rp2018 %>%
+  group_by(region) %>%
+  summarise(
+    chom_moy = weighted.mean(chom, w = pop_tot, na.rm = TRUE)  # moyenne pondérée par pop
+  ) %>%
+  arrange(desc(chom_moy))
+
 
 
 # 💬 Discussion sociologique : Les disparités régionales en matière de chômage reflètent-elles des différences économiques, sociales ou démographiques ? Quels autres indicateurs faudrait-il regarder (niveau d’éducation, structure des emplois, etc.) ?
@@ -276,13 +287,3 @@ ggplot(fr_map) +
        fill = "Chômage moyen (%)")
 
 
-
-# 💬 Discussion sociologique : Y a-t-il un “gradient géographique” du chômage en France (Nord/Sud, Est/Ouest, urbain/rural) ? Quelles hypothèses peut-on formuler pour expliquer ces différences ?
-#   
-# Bloc 1 → découvrir les données avec select, filter, mutate, etc.
-# 
-# Bloc 2 → résumer et comparer avec group_by, summarise, case_when.
-# 
-# Bloc 3 → représenter graphiquement (histogramme, barplot, boxplot, scatterplot).
-# 
-# Bloc 4 → explorer des relations plus complexes (corrélations, ACP, cartes).
