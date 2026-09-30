@@ -1,0 +1,112 @@
+---
+title: "3 — Décrire, comparer et tester"
+---
+
+# 1. Décrire avant de modéliser
+
+Une régression ne remplace jamais un descriptif. Avant un modèle, il faut connaître :
+
+- la taille de l’échantillon ;
+- la distribution de la variable étudiée ;
+- la distribution des variables explicatives ;
+- les valeurs manquantes ;
+- les associations bivariées les plus importantes.
+
+# 2. Une variable quantitative
+
+```{r}
+#| eval: false
+df |>
+  summarise(
+    n = sum(!is.na(age)),
+    moyenne = mean(age, na.rm = TRUE),
+    ecart_type = sd(age, na.rm = TRUE),
+    mediane = median(age, na.rm = TRUE),
+    q1 = quantile(age, .25, na.rm = TRUE),
+    q3 = quantile(age, .75, na.rm = TRUE)
+  )
+```
+
+La moyenne et l’écart-type sont utiles pour une distribution relativement régulière ; la médiane et l’intervalle interquartile sont souvent plus robustes.
+
+# 3. Une variable qualitative
+
+```{r}
+#| eval: false
+df |>
+  count(sexe) |>
+  mutate(pct = 100 * n / sum(n))
+```
+
+Toujours demander : **quel dénominateur produit ce pourcentage ?**
+
+# 4. Tableau descriptif avec gtsummary
+
+```{r}
+#| eval: false
+df |>
+  select(age, sexe, age_cat, occup_cat, sport) |>
+  tbl_summary(
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "ifany"
+  ) |>
+  bold_labels()
+```
+
+# 5. Comparer deux groupes
+
+```{r}
+#| eval: false
+df |>
+  select(sport, age_cat, sexe, occup_cat) |>
+  tbl_summary(
+    by = sport,
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    percent = "column",
+    missing = "ifany"
+  ) |>
+  add_p()
+```
+
+## Lire une p-value
+
+La p-value ne mesure ni l’importance sociale d’une différence ni sa taille. Elle indique dans quelle mesure les données sont compatibles avec une hypothèse nulle, sous les conditions du test.
+
+On ne rédige pas : “la variable X a un effet parce que p < 0,05”.
+
+On peut rédiger : “la distribution de X diffère entre les deux groupes dans cet échantillon (test du χ², p < 0,05). La taille et le sens de cette différence doivent être lus dans les pourcentages.”
+
+# 6. Tableau croisé et χ²
+
+```{r}
+#| eval: false
+tab <- table(df$sport, df$age_cat)
+prop.table(tab, margin = 1) * 100
+chisq.test(tab)
+```
+
+**H0 :** les deux variables sont indépendantes dans la population étudiée.
+
+Avant d’interpréter le test, inspectez les effectifs attendus :
+
+```{r}
+#| eval: false
+test <- chisq.test(tab)
+test$expected
+```
+
+Si plusieurs cases ont de très faibles effectifs attendus, le χ² peut être inadapté.
+
+# 7. Écrire une interprétation utile
+
+Une bonne interprétation suit quatre étapes :
+
+1. décrire le contraste principal ;
+2. donner un ordre de grandeur ;
+3. indiquer l’incertitude ou le test ;
+4. proposer une lecture sociologique prudente.
+
+Exemple de forme : “La pratique est plus fréquente dans le groupe A que dans le groupe B. L’écart observé est de … points. Le test d’indépendance indique … . Cette différence peut être rapprochée de …, sans permettre à elle seule d’établir un mécanisme causal.”
