@@ -1,0 +1,56 @@
+---
+title: "TD 0C — Nettoyage, non-réponse et recodages avec gss_cat"
+---
+
+# Objectif
+
+S’entraîner à préparer un fichier contenant des **modalités spéciales de non-réponse** et des facteurs à nombreuses catégories.
+
+Jeu : `forcats::gss_cat`.
+
+# Travail
+
+## A. Diagnostic
+
+1. Chargez `gss_cat`.
+2. Conservez :
+   `age`, `sex`, `marital`, `relig`, `race`, `rincome`, `partyid`, `tvhours`.
+3. Pour chaque variable :
+   - type R ;
+   - nombre de modalités si qualitative ;
+   - nombre de NA.
+
+## B. Modalités spéciales
+
+4. Affichez toutes les modalités de `rincome`.
+5. Identifiez celles qui ne sont pas des catégories de revenu.
+6. Faites le même travail pour `partyid`.
+7. Expliquez pourquoi une modalité “No answer” n’est pas équivalente à un `NA` technique.
+
+## C. Recodage du revenu
+
+8. Proposez un regroupement de `rincome` en :
+   - bas ;
+   - moyen ;
+   - élevé ;
+   - non-réponse.
+9. Justifiez les seuils retenus.
+10. Vérifiez le recodage par un tableau croisé.
+
+## D. Âge et télévision
+
+11. Créez `age_cat` : 18–34 / 35–54 / 55+.
+12. Créez `tv_high` : moins de 3 h / 3 h ou plus.
+13. Vérifiez que les `NA` de `tvhours` restent manquants.
+
+## E. Catégories rares
+
+14. Calculez les effectifs de `relig` et `partyid`.
+15. Utilisez `fct_lump_min()` pour regrouper les catégories très rares.
+16. Comparez le nombre de modalités avant et après.
+
+## F. Jeu final
+
+17. Construisez un jeu propre pour une future ACM.
+18. Construisez un autre jeu propre pour une future régression de `tv_high`.
+19. Expliquez pourquoi les deux jeux n’ont pas nécessairement besoin d’avoir exactement les mêmes variables ni les mêmes observations.

@@ -2,46 +2,203 @@
 title: "1 — Démarrer une analyse d’enquête"
 ---
 
-# Objectifs
+# Objectifs de la séance
 
 À la fin de ce chapitre, vous saurez :
 
-- distinguer **unité d’analyse**, variable et modalité ;
-- ouvrir un projet RStudio et travailler sans chemin absolu ;
-- inspecter un jeu de données sans le modifier ;
-- repérer les types de variables et les valeurs manquantes ;
-- construire un diagnostic avant toute analyse.
+- distinguer **unité d’analyse**, individu, variable, modalité et observation ;
+- comprendre ce qu’est un objet R et comment l’inspecter ;
+- organiser un script reproductible ;
+- distinguer variables quantitatives, qualitatives et identifiants ;
+- utiliser `head()`, `glimpse()`, `summary()`, `table()` et `look_for()` ;
+- repérer les valeurs manquantes ;
+- construire un **diagnostic de données** avant toute transformation ;
+- expliquer avec vos mots ce que contient un fichier d’enquête.
 
-# 1. Une enquête n’est pas seulement un tableau
+L’objectif n’est pas encore de “faire des statistiques”. Nous apprenons d’abord à **comprendre ce que nous avons entre les mains**.
 
-Avant R, il faut répondre à trois questions.
+# 1. Avant R : quelle est l’unité d’analyse ?
 
-**Qui ou quoi représente une ligne ?**  
-Dans une enquête individuelle, une ligne représente généralement une personne. Mais ce n’est pas toujours le cas : dans `MASS::housing`, une ligne représente un profil et la variable `Freq` indique combien de personnes ont ce profil.
+Un fichier d’enquête ressemble à une table, mais toutes les tables ne représentent pas la même chose.
 
-**Que représente une colonne ?**  
-Une colonne peut être une mesure numérique, une catégorie, un identifiant, un poids d’enquête ou une information construite.
+Dans une enquête individuelle classique :
 
-**Que signifie une valeur manquante ?**  
-Un `NA` peut correspondre à une non-réponse, une question non posée, une information inconnue ou une valeur supprimée. Ces situations n’ont pas toutes le même sens sociologique.
+| id | age | sexe | sport |
+|---:|---:|---|---|
+| 1 | 27 | Femme | Oui |
+| 2 | 63 | Homme | Non |
+| 3 | 41 | Femme | Oui |
 
-# 2. Toujours partir d’un projet
+une ligne représente généralement **une personne**.
 
-Un projet rend le travail portable. Évitez :
+Mais d’autres situations existent :
+
+- une ligne = un ménage ;
+- une ligne = un établissement ;
+- une ligne = une commune ;
+- une ligne = un épisode dans une trajectoire ;
+- une ligne = un profil agrégé représentant plusieurs personnes.
+
+Cette question est fondamentale car elle détermine ce que l’on compte.
+
+::: callout-important
+Avant la première commande R, soyez capable de compléter la phrase :
+
+> **“Une ligne du fichier représente…”**
+:::
+
+## Exemple : pourquoi cela change tout
+
+Dans `MASS::housing`, une ligne décrit une combinaison de modalités et la colonne `Freq` donne le nombre d’habitants correspondant à cette combinaison.
+
+Ainsi :
+
+```{r}
+#| eval: false
+nrow(MASS::housing)
+sum(MASS::housing$Freq)
+```
+
+ne répondent pas à la même question.
+
+Le premier résultat est le nombre de **lignes/profils**.  
+Le second est le nombre d’**habitants représentés**.
+
+# 2. Les éléments d’un jeu de données
+
+## Une observation
+
+Une observation correspond à une unité enregistrée dans une ligne.
+
+## Une variable
+
+Une variable décrit une caractéristique de l’unité : âge, sexe, profession, opinion, pratique culturelle, revenu, etc.
+
+## Une modalité
+
+Une modalité est une valeur possible d’une variable qualitative.
+
+Par exemple, pour une variable `sexe`, les modalités peuvent être `Femme` et `Homme`.
+
+## Une valeur
+
+La valeur est ce qui est effectivement enregistré pour une observation donnée.
+
+# 3. Le type sociologique et le type R ne sont pas la même chose
+
+Une variable peut être enregistrée comme nombre dans R sans être une quantité au sens statistique.
+
+Exemple :
+
+```
+1 = cadre
+2 = profession intermédiaire
+3 = employé
+4 = ouvrier
+```
+
+Même si R voit des nombres, calculer la moyenne de cette variable n’aurait pas de sens.
+
+On distingue donc deux questions :
+
+1. **Comment R stocke-t-il la variable ?**
+2. **Que signifie sociologiquement cette variable ?**
+
+Types courants dans R :
+
+- `dbl` / `numeric` : nombre ;
+- `int` : entier ;
+- `chr` : texte ;
+- `factor` : variable qualitative avec niveaux ;
+- `lgl` : vrai/faux ;
+- `Date` : date.
+
+# 4. Organiser son travail dans RStudio
+
+Un travail reproductible repose sur quatre éléments :
+
+1. un **projet** ;
+2. un **script** ou un document Quarto ;
+3. des données ;
+4. des sorties que l’on peut reconstruire.
+
+## À éviter
 
 ```{r}
 #| eval: false
 read.csv("C:/Users/mon_nom/Desktop/enquete.csv")
 ```
 
-Préférez un chemin relatif au projet :
+Ce code dépend d’un ordinateur précis.
+
+## À privilégier
 
 ```{r}
 #| eval: false
 readr::read_csv("data/enquete.csv")
 ```
 
-# 3. Premier diagnostic
+Le chemin est relatif au projet.
+
+# 5. Anatomie d’un script propre
+
+Un script de cours ou d’examen peut suivre cette structure :
+
+```{r}
+#| eval: false
+
+# 0. Packages -----------------------------------------------------------
+
+library(tidyverse)
+library(questionr)
+library(labelled)
+library(gtsummary)
+
+# 1. Chargement des données --------------------------------------------
+
+data(hdv2003)
+df_brut <- hdv2003
+
+# 2. Diagnostic ---------------------------------------------------------
+
+dim(df_brut)
+glimpse(df_brut)
+
+# 3. Préparation --------------------------------------------------------
+
+# ...
+
+# 4. Description --------------------------------------------------------
+
+# ...
+
+# 5. Modélisation -------------------------------------------------------
+
+# ...
+```
+
+Les commentaires doivent expliquer la **logique**, pas répéter mécaniquement le nom de la fonction.
+
+Moins utile :
+
+```{r}
+#| eval: false
+# On utilise table
+table(df_brut$sexe)
+```
+
+Plus utile :
+
+```{r}
+#| eval: false
+# Vérifier les modalités et les éventuelles valeurs manquantes
+# avant d'utiliser sexe dans les analyses.
+table(df_brut$sexe, useNA = "ifany")
+```
+
+# 6. Notre premier jeu : hdv2003
+
+`hdv2003`, fourni par le package `questionr`, contient des informations sociodémographiques et des pratiques culturelles et de loisirs.
 
 ```{r}
 #| eval: false
@@ -51,64 +208,341 @@ library(labelled)
 
 data(hdv2003)
 df_brut <- hdv2003
+```
 
+Pourquoi créer `df_brut` ?
+
+Parce que nous voulons garder une copie du jeu tel qu’il a été chargé. Les transformations seront faites dans d’autres objets.
+
+# 7. Combien de lignes et de colonnes ?
+
+```{r}
+#| eval: false
 dim(df_brut)
+nrow(df_brut)
+ncol(df_brut)
+```
+
+Ces commandes répondent à trois questions simples :
+
+- quelles sont les dimensions du tableau ?
+- combien d’observations ?
+- combien de variables ?
+
+::: callout-tip
+Lors d’un examen, notez l’effectif initial. Vous pourrez ensuite mesurer combien d’observations ont été perdues pendant le nettoyage.
+:::
+
+# 8. Quels sont les noms des variables ?
+
+```{r}
+#| eval: false
 names(df_brut)
-glimpse(df_brut)
+```
+
+Avec beaucoup de variables, on peut rechercher un terme :
+
+```{r}
+#| eval: false
+grep("age", names(df_brut), value = TRUE)
+grep("sport", names(df_brut), value = TRUE)
+```
+
+# 9. Regarder quelques lignes
+
+```{r}
+#| eval: false
 head(df_brut)
+head(df_brut, 10)
+```
+
+`head()` est utile pour comprendre la forme du fichier, mais six lignes ne résument évidemment pas toute une enquête.
+
+# 10. Comprendre la structure avec glimpse()
+
+```{r}
+#| eval: false
+glimpse(df_brut)
+```
+
+Pour chaque variable, demandez-vous :
+
+- quel est le type R ?
+- les premières valeurs paraissent-elles cohérentes ?
+- le nom suffit-il à comprendre la variable ?
+- faudra-t-il consulter un dictionnaire ou un label ?
+
+# 11. Consulter les labels et le dictionnaire
+
+```{r}
+#| eval: false
 look_for(df_brut)
 ```
 
-## Comment lire ces sorties ?
+On peut rechercher un mot :
 
-- `dim()` : combien de lignes et de colonnes ?
-- `names()` : quelles variables existent ?
-- `glimpse()` : quel type R pour chaque variable ?
-- `head()` : à quoi ressemblent quelques observations ?
-- `look_for()` : quels labels et quelles modalités sont disponibles ?
+```{r}
+#| eval: false
+look_for(df_brut, "trav")
+look_for(df_brut, "sport")
+```
 
-# 4. Faire l’inventaire des valeurs manquantes
+Dans un vrai projet d’évaluation, le dictionnaire des variables est un document aussi important que le fichier lui-même.
+
+# 12. Examiner une variable quantitative
+
+Prenons l’âge.
+
+```{r}
+#| eval: false
+summary(df_brut$age)
+```
+
+Puis :
+
+```{r}
+#| eval: false
+min(df_brut$age, na.rm = TRUE)
+max(df_brut$age, na.rm = TRUE)
+mean(df_brut$age, na.rm = TRUE)
+median(df_brut$age, na.rm = TRUE)
+```
+
+À ce stade, la question n’est pas de commenter toutes les statistiques. Il faut d’abord vérifier que l’ordre de grandeur paraît plausible.
+
+# 13. Examiner une variable qualitative
+
+```{r}
+#| eval: false
+table(df_brut$sexe)
+```
+
+Pour afficher également les valeurs manquantes :
+
+```{r}
+#| eval: false
+table(df_brut$sexe, useNA = "ifany")
+```
+
+Et les proportions :
+
+```{r}
+#| eval: false
+prop.table(table(df_brut$sexe)) * 100
+```
+
+# 14. Valeurs manquantes : première inspection
+
+Un `NA` signifie “valeur manquante” pour R.
+
+## Sur une variable
+
+```{r}
+#| eval: false
+sum(is.na(df_brut$age))
+mean(is.na(df_brut$age)) * 100
+```
+
+La première commande donne un **effectif**.  
+La seconde donne un **pourcentage**.
+
+## Sur plusieurs variables
 
 ```{r}
 #| eval: false
 df_brut |>
+  select(age, sexe, occup, nivetud, sport, heures.tv) |>
+  summarise(across(everything(), ~ sum(is.na(.x))))
+```
+
+Pour une sortie plus lisible :
+
+```{r}
+#| eval: false
+diagnostic_na <- df_brut |>
+  select(age, sexe, occup, nivetud, sport, heures.tv) |>
   summarise(across(everything(), ~ sum(is.na(.x)))) |>
   pivot_longer(
     everything(),
     names_to = "variable",
     values_to = "n_manquants"
   ) |>
-  arrange(desc(n_manquants))
+  mutate(
+    pct_manquants = 100 * n_manquants / nrow(df_brut)
+  ) |>
+  arrange(desc(pct_manquants))
+
+diagnostic_na
 ```
 
-Cette table ne dit pas encore quoi faire. Elle dit **où regarder**.
+# 15. Manquant ne veut pas toujours dire la même chose
 
-# 5. Le diagnostic attendu
+Une valeur peut manquer parce que :
 
-Avant toute transformation, rédigez cinq lignes :
+- l’enquêté n’a pas répondu ;
+- il a refusé de répondre ;
+- il ne savait pas ;
+- la question ne le concernait pas ;
+- l’information a été perdue ;
+- une valeur aberrante a été transformée en `NA`.
 
-1. l’unité d’analyse ;
-2. l’effectif brut ;
-3. les variables importantes pour la question ;
-4. les variables contenant des manquants ;
-5. les décisions qui devront être prises avant l’analyse.
+Ces situations sont différentes.
 
-# 6. Pièges fréquents
+::: callout-warning
+Ne transformez pas automatiquement tous les `NA` en une modalité “Non renseigné”. Cela reviendrait parfois à mélanger des situations qui n’ont pas le même sens.
+:::
 
-- commencer par `na.omit()` sur tout le fichier ;
-- convertir toutes les variables en facteurs sans raison ;
-- ignorer les labels ;
-- modifier l’objet brut ;
-- travailler directement dans la console sans script ;
-- confondre “code qui s’exécute” et “analyse correcte”.
+# 16. Construire un mini-dictionnaire de travail
 
-# Exercice minute
+Pour une analyse donnée, il est utile de fabriquer une petite table :
 
-Avec `hdv2003`, trouvez :
+| Variable | Signification | Type attendu | Rôle dans l’analyse | Point de vigilance |
+|---|---|---|---|---|
+| `age` | âge en années | quantitative | explicative | valeurs extrêmes |
+| `sexe` | sexe déclaré | qualitative | explicative | référence |
+| `sport` | pratique du sport | qualitative binaire | variable d’intérêt | modalité modélisée |
+| `nivetud` | niveau d’études | qualitative ordonnée | explicative | modalités nombreuses |
+| `heures.tv` | heures de TV | quantitative discrète | explicative | manquants / extrêmes |
 
-- le nombre d’observations ;
-- le type de `age`, `sexe`, `nivetud`, `sport` ;
-- le nombre de valeurs manquantes de ces quatre variables ;
-- une phrase expliquant l’unité d’analyse.
+Cette étape paraît simple, mais elle évite beaucoup d’erreurs de programmation.
 
-Ne transformez encore aucune variable.
+# 17. Une première sélection avec select()
+
+Supposons que notre question porte sur la pratique du sport.
+
+```{r}
+#| eval: false
+df_sport <- df_brut |>
+  select(
+    id,
+    age,
+    sexe,
+    nivetud,
+    occup,
+    sport,
+    heures.tv
+  )
+
+glimpse(df_sport)
+```
+
+Nous n’avons rien supprimé dans `df_brut`. Nous avons créé un objet de travail plus petit.
+
+# 18. Une première sélection d’observations avec filter()
+
+Pour observer uniquement les personnes de 60 ans ou plus :
+
+```{r}
+#| eval: false
+df_brut |>
+  filter(age >= 60) |>
+  select(age, sexe, sport) |>
+  head()
+```
+
+Attention : `filter()` sélectionne des **lignes**, `select()` sélectionne des **colonnes**.
+
+# 19. Ajouter une variable avec mutate()
+
+```{r}
+#| eval: false
+df_brut |>
+  mutate(age2 = age * age) |>
+  select(age, age2) |>
+  head()
+```
+
+Cette variable n’a ici aucun intérêt sociologique. L’exemple montre simplement que `mutate()` crée ou transforme une colonne.
+
+Dans le chapitre suivant, nous l’utiliserons pour produire de vrais recodages.
+
+# 20. Atelier guidé — Diagnostic de hdv2003
+
+Travaillez par deux.
+
+## Étape 1
+
+Chargez le jeu et créez `df_brut`.
+
+## Étape 2
+
+Répondez sans transformer les données :
+
+1. Combien y a-t-il de lignes ?
+2. Combien y a-t-il de variables ?
+3. Quel est le type R de `age` ?
+4. Quel est le type R de `sexe` ?
+5. Quelles sont les modalités de `sport` ?
+6. Combien de valeurs manquantes dans `heures.tv` ?
+7. Quelle variable semble décrire l’activité professionnelle ?
+8. Quelle variable semble décrire le niveau d’études ?
+
+## Étape 3
+
+Créez un objet `diagnostic` ne contenant que :
+
+`age`, `sexe`, `occup`, `nivetud`, `sport`, `heures.tv`.
+
+## Étape 4
+
+Pour chacune des six variables, produisez une sortie adaptée :
+
+- `summary()` pour une quantitative ;
+- `table(..., useNA = "ifany")` pour une qualitative.
+
+## Étape 5
+
+Rédigez cinq phrases :
+
+1. unité d’analyse ;
+2. effectif ;
+3. variables principales ;
+4. valeurs manquantes importantes ;
+5. décisions qui devront être prises avant d’étudier la pratique du sport.
+
+# 21. À vous de faire — sans corrigé immédiat
+
+Avec le même jeu :
+
+1. recherchez toutes les variables dont le nom contient `"trav"` ;
+2. trouvez la distribution de `relig` ;
+3. calculez le pourcentage de NA de `nivetud` ;
+4. créez un objet contenant uniquement les personnes de moins de 30 ans ;
+5. vérifiez que `df_brut` n’a pas changé après ces opérations.
+
+# 22. Erreurs fréquentes
+
+## Erreur 1 — travailler directement sur l’objet brut
+
+```{r}
+#| eval: false
+hdv2003 <- na.omit(hdv2003)
+```
+
+On ne sait plus facilement ce qui a été perdu.
+
+## Erreur 2 — utiliser summary() sans comprendre les types
+
+`summary()` ne donne pas la même information pour une variable numérique et un facteur.
+
+## Erreur 3 — faire confiance au nom de la variable
+
+Une variable `income` peut être numérique, catégorielle, ordonnée ou contenir des codes spéciaux.
+
+## Erreur 4 — ignorer les NA
+
+Un résultat calculé sur 2 000 individus et un autre sur 800 individus ne décrivent pas forcément la même population.
+
+# 23. Ce qu’il faut retenir
+
+Avant de nettoyer ou de modéliser :
+
+- identifiez l’unité d’analyse ;
+- notez l’effectif initial ;
+- inspectez les noms et types ;
+- regardez les modalités ;
+- quantifiez les valeurs manquantes ;
+- construisez un petit dictionnaire des variables utiles ;
+- gardez toujours un objet brut intact.
+
+Le chapitre suivant commence seulement une fois que vous savez expliquer ce que contient votre fichier.

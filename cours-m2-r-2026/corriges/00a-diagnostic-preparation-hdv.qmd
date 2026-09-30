@@ -1,0 +1,311 @@
+---
+title: "Corrigé TD 0A — Diagnostiquer et préparer hdv2003"
+---
+
+# 1. Chargement
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(questionr)
+library(labelled)
+
+data(hdv2003)
+df_brut <- hdv2003
+```
+
+# 2. Dimensions et unité d’analyse
+
+```{r}
+#| eval: false
+dim(df_brut)
+nrow(df_brut)
+ncol(df_brut)
+glimpse(df_brut)
+```
+
+Une ligne correspond à une personne enquêtée.
+
+Le point important est de distinguer ce constat de la simple lecture de `nrow()` : le nombre de lignes n’indique pas à lui seul ce que représente une ligne.
+
+# 3. Rechercher des variables
+
+```{r}
+#| eval: false
+look_for(df_brut, "trav")
+look_for(df_brut, "relig")
+look_for(df_brut, "sport")
+look_for(df_brut, "cinema")
+```
+
+Cette étape reproduit un geste professionnel fréquent : on reçoit un fichier contenant beaucoup de variables et on doit reconstruire rapidement son dictionnaire.
+
+# 4. Diagnostic des valeurs manquantes
+
+```{r}
+#| eval: false
+vars <- c(
+  "age", "sexe", "occup", "nivetud",
+  "sport", "cinema", "heures.tv"
+)
+
+diagnostic_na <- df_brut |>
+  select(all_of(vars)) |>
+  summarise(
+    across(
+      everything(),
+      list(
+        n_na = ~ sum(is.na(.x)),
+        pct_na = ~ mean(is.na(.x)) * 100
+      )
+    )
+  ) |>
+  pivot_longer(
+    everything(),
+    names_to = c("variable", ".value"),
+    names_pattern = "(.*)_(n_na|pct_na)$"
+  ) |>
+  arrange(desc(pct_na))
+
+diagnostic_na
+```
+
+**Lecture attendue :** on identifie quelles variables risquent de réduire fortement l’effectif d’analyse.
+
+# 5. Unicité de l’identifiant
+
+```{r}
+#| eval: false
+nrow(df_brut)
+n_distinct(df_brut$id)
+
+df_brut |>
+  count(id) |>
+  filter(n > 1)
+```
+
+Si la dernière sortie est vide et que les deux effectifs précédents sont identiques, `id` est unique dans ce fichier.
+
+# 6. Contrôler l’âge
+
+```{r}
+#| eval: false
+summary(df_brut$age)
+
+df_brut |>
+  count(age, sort = TRUE)
+```
+
+On cherche surtout des valeurs impossibles ou très atypiques.
+
+# 7. Inspecter les facteurs
+
+```{r}
+#| eval: false
+table(df_brut$occup, useNA = "ifany")
+table(df_brut$nivetud, useNA = "ifany")
+
+levels(df_brut$occup)
+levels(df_brut$nivetud)
+```
+
+# 8. Recoder l’âge
+
+```{r}
+#| eval: false
+df_prepare <- df_brut |>
+  mutate(
+    age_cat = cut(
+      age,
+      breaks = c(18, 30, 50, 65, Inf),
+      right = FALSE,
+      labels = c(
+        "18–29",
+        "30–49",
+        "50–64",
+        "65+"
+      )
+    )
+  )
+
+table(df_prepare$age_cat, useNA = "ifany")
+```
+
+Contrôle des bornes :
+
+```{r}
+#| eval: false
+df_prepare |>
+  filter(age %in% c(18, 29, 30, 49, 50, 64, 65)) |>
+  count(age, age_cat)
+```
+
+# 9. Recoder la télévision
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    tv_cat = case_when(
+      is.na(heures.tv) ~ NA_character_,
+      heures.tv == 0 ~ "0 h",
+      heures.tv == 1 ~ "1 h",
+      heures.tv == 2 ~ "2 h",
+      heures.tv >= 3 ~ "3 h ou plus"
+    ),
+    tv_cat = factor(
+      tv_cat,
+      levels = c("0 h", "1 h", "2 h", "3 h ou plus")
+    )
+  )
+
+table(
+  df_prepare$heures.tv,
+  df_prepare$tv_cat,
+  useNA = "ifany"
+)
+```
+
+Le traitement explicite de `is.na(heures.tv)` empêche de ranger accidentellement les manquants dans la dernière catégorie.
+
+# 10. Recoder l’occupation
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    occup_cat = case_when(
+      occup == "Exerce une profession" ~ "En emploi",
+      occup == "Chomeur" ~ "Chômage",
+      occup %in% c("Etudiant, eleve", "Au foyer") ~ "Études / foyer",
+      occup %in% c(
+        "Retraite",
+        "Retire des affaires",
+        "Autre inactif"
+      ) ~ "Retraite / autre inactivité",
+      TRUE ~ NA_character_
+    )
+  )
+
+table(
+  df_prepare$occup,
+  df_prepare$occup_cat,
+  useNA = "ifany"
+)
+```
+
+Ce recodage est plus fin que “actifs/inactifs” car il conserve le chômage séparément. Pour une étude sur l’emploi, ce choix est souvent préférable.
+
+# 11. Recoder les études
+
+Une solution possible :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    etudes_cat = forcats::fct_collapse(
+      nivetud,
+      "Primaire" = c(
+        "N'a jamais fait d'etudes",
+        "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+        "Derniere annee d'etudes primaires"
+      ),
+      "Secondaire / professionnel" = c(
+        "1er cycle",
+        "2eme cycle",
+        "Enseignement technique ou professionnel court",
+        "Enseignement technique ou professionnel long"
+      ),
+      "Supérieur" =
+        "Enseignement superieur y compris technique superieur"
+    )
+  )
+
+table(
+  df_prepare$nivetud,
+  df_prepare$etudes_cat,
+  useNA = "ifany"
+)
+```
+
+::: callout-note
+Ce regroupement n’est pas le seul possible. Une autre classification peut être meilleure selon la question. Ce qui est évalué est la cohérence du choix et son contrôle.
+:::
+
+# 12. Construire le jeu final
+
+```{r}
+#| eval: false
+df_loisirs <- df_prepare |>
+  select(
+    id,
+    age,
+    age_cat,
+    sexe,
+    occup_cat,
+    etudes_cat,
+    tv_cat,
+    sport,
+    cinema,
+    cuisine,
+    bricol
+  )
+```
+
+# 13. Mesurer la perte due aux cas complets
+
+```{r}
+#| eval: false
+df_loisirs <- df_loisirs |>
+  mutate(
+    complet = if_else(
+      complete.cases(
+        age_cat,
+        sexe,
+        occup_cat,
+        etudes_cat,
+        tv_cat,
+        sport,
+        cinema,
+        cuisine,
+        bricol
+      ),
+      "Complet",
+      "Incomplet"
+    )
+  )
+
+table(df_loisirs$complet)
+
+n_initial <- nrow(df_loisirs)
+n_complet <- sum(df_loisirs$complet == "Complet")
+
+tibble(
+  n_initial = n_initial,
+  n_complet = n_complet,
+  perdus = n_initial - n_complet,
+  pct_perdus = 100 * (n_initial - n_complet) / n_initial
+)
+```
+
+# 14. Les cas incomplets sont-ils différents ?
+
+```{r}
+#| eval: false
+df_loisirs |>
+  group_by(complet) |>
+  summarise(
+    n = n(),
+    age_moyen = mean(age, na.rm = TRUE),
+    age_median = median(age, na.rm = TRUE)
+  )
+```
+
+Ce contrôle ne suffit pas pour diagnostiquer le mécanisme de non-réponse, mais il rappelle que supprimer des observations peut modifier la population analysée.
+
+# 15. Exemple de note technique
+
+Une bonne note peut suivre cette structure :
+
+> Le fichier est organisé au niveau individuel : une ligne correspond à une personne enquêtée. L’effectif initial doit être relevé avant toute transformation. Les variables utiles à l’étude des loisirs comportent des types hétérogènes et certaines valeurs manquantes. L’âge, les heures de télévision, l’occupation et le niveau d’études ont été recodés afin de construire des catégories plus lisibles pour l’analyse. Chaque recodage a été contrôlé par comparaison avec la variable initiale. Le recours aux cas complets réduit l’effectif de X à Y observations, soit Z % de perte. Cette suppression peut modifier la composition de l’échantillon si les observations incomplètes ont un profil spécifique. Les analyses suivantes devront donc indiquer explicitement l’effectif utilisé.

@@ -8,6 +8,12 @@ Public : **M2 professionnel de sociologie, parcours Évaluation et conseil**.
 
 Le cours vise l’autonomie analytique plutôt que la technicité informatique. Les étudiants doivent pouvoir reprendre un fichier fourni par une administration, une association, un cabinet ou une équipe de recherche et produire une analyse argumentée.
 
+Le fil rouge pédagogique est désormais très explicite :
+
+> **comprendre → préparer → contrôler → décrire → comparer → modéliser → explorer → restituer**
+
+Les trois premières étapes occupent une place importante. Elles ne sont pas traitées comme une introduction rapide, mais comme de vraies compétences professionnelles.
+
 # Compétences finales
 
 À la fin du module, l’étudiant doit pouvoir :
@@ -15,8 +21,13 @@ Le cours vise l’autonomie analytique plutôt que la technicité informatique. 
 - distinguer individu, ménage, profil agrégé et observation pondérée ;
 - construire un dictionnaire minimal des variables utiles ;
 - identifier les modalités spéciales et les valeurs manquantes ;
+- vérifier l’unicité d’un identifiant ;
+- sélectionner et filtrer sans perdre la traçabilité du fichier brut ;
 - justifier un recodage et vérifier qu’il n’a pas créé d’erreur ;
+- construire plusieurs jeux d’analyse à partir d’un même fichier lorsque les méthodes utilisent des variables différentes ;
+- quantifier la perte d’observations lors du recours aux cas complets ;
 - produire des statistiques descriptives adaptées ;
+- distinguer pourcentages en ligne et en colonne ;
 - lire un tableau croisé, un test du χ² et une p-valeur sans les surinterpréter ;
 - estimer une régression logistique, identifier les références et interpréter un odds ratio ;
 - préférer les probabilités prédites quand elles améliorent la communication ;
@@ -29,27 +40,57 @@ Le cours vise l’autonomie analytique plutôt que la technicité informatique. 
 
 ## Séance 1 — Comprendre avant de manipuler
 
-**Objectifs :** RStudio, projet, script, objets, types, dictionnaire, unité d’analyse.
+**Objectifs :** RStudio, projet, script, objets, types, dictionnaire, unité d’analyse, inspection des valeurs manquantes.
 
-**Activité :** `hdv2003`, diagnostic en binômes.
+**Démonstration :** prise en main de `hdv2003`.
 
-**Sortie :** une fiche “ce que je sais / ce que je dois vérifier”.
+**Pratique guidée :**
+- `dim()`, `glimpse()`, `head()`, `summary()` ;
+- `table(..., useNA = "ifany")` ;
+- `look_for()` ;
+- diagnostic des NA ;
+- construction d’un mini-dictionnaire.
+
+**TD associé :** `TD 0A — Diagnostiquer et préparer un fichier d’enquête`.
+
+**Sortie :** fiche de diagnostic + note technique.
 
 ## Séance 2 — Préparer un jeu d’enquête
 
-**Objectifs :** sélection, filtrage, doublons, NA, recodages, facteurs, références.
+**Objectifs :** sélection, filtrage, doublons, NA, recodages, facteurs, références, cas complets.
 
-**Activité :** création d’un jeu d’analyse consacré aux pratiques culturelles.
+**Démonstration :** préparation de variables liées aux pratiques culturelles dans `hdv2003`.
 
-**Sortie :** tableau de contrôle avant/après recodage.
+**Pratique guidée :**
+- `select()`, `filter()`, `rename()`, `mutate()` ;
+- `case_when()`, `cut()`, `fct_collapse()`, `fct_relevel()` ;
+- vérification ancien × nouveau codage ;
+- comparaison des effectifs avant/après ;
+- profil des observations complètes/incomplètes.
+
+**TD associés :**
+- fin du `TD 0A` ;
+- `TD 0C — Nettoyage, non-réponse et recodages avec gss_cat`.
+
+**Sortie :** jeu d’analyse documenté + fiche de traçabilité des transformations.
 
 ## Séance 3 — Décrire et comparer
 
-**Objectifs :** proportions, moyenne/médiane, tableaux croisés, `tbl_summary()`, `add_p()`, χ².
+**Objectifs :** proportions, moyenne/médiane, dispersion, tableaux croisés, pourcentages ligne/colonne, `tbl_summary()`, `add_p()`, χ² et graphiques.
 
-**Activité :** profil des pratiquants et non-pratiquants.
+**Démonstration :** profils des pratiquants et non-pratiquants.
 
-**Sortie :** tableau commenté en 8 à 10 lignes.
+**Pratique guidée :**
+- calcul manuel de proportions avec `count()` + `group_by()` ;
+- `prop.table()` ;
+- tableau global puis stratifié ;
+- lecture du χ², effectifs attendus et résidus standardisés ;
+- histogramme, boxplot, barplot proportionnel ;
+- rédaction en quatre niveaux : fait → ampleur → incertitude → interprétation.
+
+**TD associé :** `TD 0B — Décrire et comparer une population d’enquête`.
+
+**Sortie :** tableau commenté + graphique + paragraphe sociologique.
 
 ## Séance 4 — Régression logistique
 
@@ -83,15 +124,69 @@ Le cours vise l’autonomie analytique plutôt que la technicité informatique. 
 
 **Sortie :** 2 pages + script reproductible.
 
+# Organisation pratique des trois premières séances
+
+Pour éviter que les étudiants ne restent spectateurs, les chapitres 1 à 3 alternent quatre formats.
+
+## 1. Démonstration courte
+
+L’enseignant montre une notion sur un jeu réel.
+
+Durée cible : 10 à 20 minutes.
+
+## 2. Reproduction guidée
+
+Les étudiants reproduisent une opération avec une question précise.
+
+Exemple :
+
+> “Combien d’observations sont perdues si nous exigeons des cas complets sur ces six variables ?”
+
+## 3. Exercice de diagnostic
+
+Les étudiants doivent repérer une erreur ou discuter un choix.
+
+Exemples :
+- un `case_when()` qui classe accidentellement les `NA` parmi les 55+ ;
+- un recodage trop grossier ;
+- un mauvais dénominateur dans un pourcentage.
+
+## 4. Mini-production autonome
+
+À la fin de la séance, les étudiants produisent un objet concret :
+- fiche de diagnostic ;
+- fichier propre ;
+- tableau commenté ;
+- graphique commenté.
+
 # Rythme d’une séance de 3 heures
 
-- 20 min : question et concepts ;
-- 25 min : démonstration commentée ;
-- 45 min : exercice guidé ;
+- 15 min : question sociologique et rappel du workflow ;
+- 25 min : démonstration ;
+- 35 min : reproduction guidée ;
 - 15 min : correction collective ;
-- 45 min : exercice autonome ;
-- 20 min : correction et interprétation ;
+- 40 min : TD en binômes ;
+- 20 min : mise en commun des choix ;
+- 20 min : exercice autonome ;
 - 10 min : synthèse / “ce qu’il faut retenir”.
+
+Cette organisation est particulièrement recommandée pour les séances 1 à 3 : l’apprentissage de R passe par la répétition de gestes simples dans plusieurs contextes.
+
+# Banque d’exercices disponible
+
+## Préparation
+
+- **TD 0A — hdv2003** : diagnostic, doublons, valeurs manquantes, recodages, cas complets.
+- **TD 0C — gss_cat** : modalités spéciales, non-réponse, recodage du revenu, catégories rares.
+- **Exercice 1 — hdv2003** : préparation puis analyse complète.
+- **Exercice 2 — gss_cat** : préparation puis régression et ACM.
+
+## Description
+
+- **TD 0B — hdv2003** : statistiques univariées, pourcentages, tableaux croisés, χ², graphiques, rédaction.
+- Les exercices 1 à 5 reprennent ensuite ces compétences dans des analyses plus complètes.
+
+Cette répétition est volontaire : les compétences de préparation et de description doivent devenir des automatismes avant la modélisation.
 
 # Évaluation
 
@@ -108,10 +203,56 @@ La grille privilégie :
 
 Une bonne copie ne se limite donc jamais à des commandes R. Elle explicite les choix et les relie à la question étudiée.
 
-# Ce que l’on retire du premier plan de cours
+# Ce qui doit devenir automatique avant la régression
 
-Certaines briques de l’ancien dépôt restent utiles : `questionr::hdv2003`, `labelled`, `gtsummary`, l’ACM, les effets marginaux et la pondération. En revanche, l’ACP et la CAH deviennent des **compléments**, car elles ne doivent pas interrompre la progression principale “préparation → description → modèle → ACM”.
+Avant d’introduire `glm()`, les étudiants devraient être capables sans modèle fourni de :
+
+1. charger et inspecter un jeu ;
+2. trouver les variables nécessaires ;
+3. compter les valeurs manquantes ;
+4. examiner les modalités ;
+5. créer une variable recodée ;
+6. contrôler ce recodage ;
+7. construire un jeu d’analyse ;
+8. calculer effectifs et proportions ;
+9. produire un tableau croisé ;
+10. expliquer un pourcentage ;
+11. réaliser un χ² ;
+12. rédiger un commentaire de cinq à dix lignes.
+
+Si plusieurs de ces gestes restent fragiles, il est préférable de consacrer du temps supplémentaire à la préparation/description avant la régression.
+
+# Ce que l’on conserve de l’ancien cours
+
+Certaines briques du dépôt initial restent particulièrement utiles :
+
+- `questionr::hdv2003` comme jeu fil rouge ;
+- `labelled` et `look_for()` pour documenter les variables ;
+- `gtsummary` pour les tableaux ;
+- les exercices sur les pratiques culturelles ;
+- les analyses factorielles ;
+- les effets marginaux et la pondération.
+
+En revanche, les exemples dispersés et les répétitions entre scripts sont remplacés par une progression cumulative.
+
+L’ACP et la CAH deviennent des **compléments**, car elles ne doivent pas interrompre le parcours central :
+
+> préparation → description → régression → ACM → pondérations → restitution.
 
 # Exigence de reproductibilité
 
-Aucun chemin absolu du type `C:/Users/...`. Le cours doit être exécutable depuis le projet, sur Windows, macOS ou Linux.
+Aucun chemin absolu du type `C:/Users/...`.
+
+Le cours doit être exécutable depuis le projet, sur Windows, macOS ou Linux.
+
+Les étudiants sont encouragés à structurer systématiquement leur script avec :
+
+```
+0. Packages
+1. Chargement
+2. Diagnostic
+3. Préparation
+4. Description
+5. Analyse
+6. Restitution
+```

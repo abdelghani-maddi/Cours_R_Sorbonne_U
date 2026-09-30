@@ -1,0 +1,77 @@
+---
+title: "TD 0B — Décrire et comparer une population d’enquête"
+---
+
+# Objectif
+
+Ce TD porte sur la **statistique descriptive**, les tableaux croisés et la lecture sociologique des écarts.
+
+Jeu : `questionr::hdv2003`.
+
+# Question générale
+
+Comment les pratiques de sport et de cinéma varient-elles selon les caractéristiques sociodémographiques ?
+
+# Partie 1 — Description univariée
+
+1. Décrivez `age` avec :
+   - moyenne ;
+   - écart-type ;
+   - médiane ;
+   - quartiles ;
+   - minimum et maximum.
+2. Produisez un histogramme de l’âge.
+3. Décrivez `sexe`, `sport`, `cinema`, `occup` et `nivetud` avec effectifs et pourcentages.
+4. Pour chaque variable, précisez le dénominateur utilisé.
+
+# Partie 2 — Préparation minimale
+
+5. Créez :
+   - `age_cat` : 18–29 / 30–49 / 50–64 / 65+ ;
+   - `etudes_cat` : primaire / secondaire-professionnel / supérieur.
+6. Contrôlez les recodages.
+
+# Partie 3 — Tableaux croisés
+
+7. Construisez `age_cat × sport`.
+8. Calculez :
+   - pourcentages en ligne ;
+   - pourcentages en colonne.
+9. Expliquez en une phrase la question à laquelle répond chaque tableau.
+10. Faites la même chose pour `sexe × cinema`.
+
+# Partie 4 — Tests
+
+11. Réalisez un χ² entre `age_cat` et `sport`.
+12. Affichez les effectifs attendus.
+13. Affichez les résidus standardisés.
+14. Identifiez les cellules qui contribuent le plus à l’association.
+
+# Partie 5 — gtsummary
+
+15. Produisez un tableau descriptif global avec :
+   - âge ;
+   - tranche d’âge ;
+   - sexe ;
+   - niveau d’études ;
+   - sport ;
+   - cinéma.
+16. Produisez le même tableau stratifié par `sport`.
+17. Ajoutez les tests avec `add_p()`.
+18. Ajoutez une colonne globale.
+
+# Partie 6 — Graphiques
+
+19. Produisez :
+   - un boxplot de l’âge selon le sport ;
+   - un barplot proportionnel du sport selon l’âge ;
+   - un barplot proportionnel du cinéma selon le sexe.
+
+# Partie 7 — Rédaction
+
+20. Rédigez un commentaire de **12 lignes maximum** comportant :
+   - deux constats chiffrés ;
+   - un résultat de test ;
+   - une interprétation sociologique ;
+   - une réserve sur la causalité ;
+   - une réserve sur les valeurs manquantes ou l’échantillon.

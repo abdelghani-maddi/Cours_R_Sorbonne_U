@@ -1,0 +1,316 @@
+---
+title: "Corrigé TD 0B — Décrire et comparer hdv2003"
+---
+
+# 1. Description de l’âge
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(questionr)
+library(gtsummary)
+
+data(hdv2003)
+df <- hdv2003
+
+df |>
+  summarise(
+    n = sum(!is.na(age)),
+    moyenne = mean(age, na.rm = TRUE),
+    ecart_type = sd(age, na.rm = TRUE),
+    mediane = median(age, na.rm = TRUE),
+    q1 = quantile(age, 0.25, na.rm = TRUE),
+    q3 = quantile(age, 0.75, na.rm = TRUE),
+    minimum = min(age, na.rm = TRUE),
+    maximum = max(age, na.rm = TRUE)
+  )
+```
+
+Histogramme :
+
+```{r}
+#| eval: false
+ggplot(df, aes(x = age)) +
+  geom_histogram(bins = 30) +
+  labs(
+    title = "Distribution de l’âge",
+    x = "Âge",
+    y = "Effectif"
+  ) +
+  theme_minimal()
+```
+
+La comparaison moyenne/médiane et l’histogramme permettent d’évaluer la forme générale de la distribution.
+
+# 2. Variables qualitatives
+
+Exemple pour le sport :
+
+```{r}
+#| eval: false
+df |>
+  count(sport, .drop = FALSE) |>
+  mutate(
+    pct = 100 * n / sum(n)
+  )
+```
+
+Même logique pour :
+
+```{r}
+#| eval: false
+df |>
+  count(sexe, .drop = FALSE)
+
+df |>
+  count(cinema, .drop = FALSE)
+
+df |>
+  count(occup, .drop = FALSE)
+
+df |>
+  count(nivetud, .drop = FALSE)
+```
+
+Pour chaque tableau, le dénominateur doit être explicite. Si les `NA` sont inclus, ils font partie du total ; sinon, le dénominateur est celui des réponses observées.
+
+# 3. Recodages
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    age_cat = cut(
+      age,
+      breaks = c(18, 30, 50, 65, Inf),
+      right = FALSE,
+      labels = c("18–29", "30–49", "50–64", "65+")
+    ),
+    etudes_cat = forcats::fct_collapse(
+      nivetud,
+      "Primaire" = c(
+        "N'a jamais fait d'etudes",
+        "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+        "Derniere annee d'etudes primaires"
+      ),
+      "Secondaire / professionnel" = c(
+        "1er cycle",
+        "2eme cycle",
+        "Enseignement technique ou professionnel court",
+        "Enseignement technique ou professionnel long"
+      ),
+      "Supérieur" =
+        "Enseignement superieur y compris technique superieur"
+    )
+  )
+
+table(df$age, df$age_cat, useNA = "ifany")
+table(df$nivetud, df$etudes_cat, useNA = "ifany")
+```
+
+# 4. Tableau âge × sport
+
+```{r}
+#| eval: false
+tab_age_sport <- table(
+  df$age_cat,
+  df$sport
+)
+
+tab_age_sport
+```
+
+## Pourcentages en ligne
+
+```{r}
+#| eval: false
+round(
+  prop.table(tab_age_sport, margin = 1) * 100,
+  1
+)
+```
+
+Lecture :
+
+> “À l’intérieur de chaque tranche d’âge, comment se répartit la pratique sportive ?”
+
+## Pourcentages en colonne
+
+```{r}
+#| eval: false
+round(
+  prop.table(tab_age_sport, margin = 2) * 100,
+  1
+)
+```
+
+Lecture :
+
+> “À l’intérieur de chaque catégorie de pratique sportive, comment se répartissent les tranches d’âge ?”
+
+# 5. Sexe × cinéma
+
+```{r}
+#| eval: false
+tab_sexe_cinema <- table(
+  df$sexe,
+  df$cinema
+)
+
+round(
+  prop.table(tab_sexe_cinema, margin = 1) * 100,
+  1
+)
+
+round(
+  prop.table(tab_sexe_cinema, margin = 2) * 100,
+  1
+)
+```
+
+# 6. χ² âge × sport
+
+```{r}
+#| eval: false
+test_age_sport <- chisq.test(tab_age_sport)
+
+test_age_sport
+test_age_sport$expected
+test_age_sport$stdres
+```
+
+## Méthode de lecture
+
+1. lire la p-value globale ;
+2. vérifier les effectifs attendus ;
+3. utiliser les résidus standardisés pour repérer les cellules qui s’écartent le plus de l’indépendance ;
+4. revenir aux pourcentages pour comprendre le sens concret de l’écart.
+
+Le résidu n’est pas une interprétation sociologique. Il localise une contribution statistique.
+
+# 7. Tableau descriptif global
+
+```{r}
+#| eval: false
+df |>
+  select(
+    age,
+    age_cat,
+    sexe,
+    etudes_cat,
+    sport,
+    cinema
+  ) |>
+  tbl_summary(
+    statistic = list(
+      age ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "ifany"
+  ) |>
+  bold_labels()
+```
+
+# 8. Tableau selon le sport
+
+```{r}
+#| eval: false
+df |>
+  select(
+    sport,
+    age,
+    age_cat,
+    sexe,
+    etudes_cat,
+    cinema
+  ) |>
+  tbl_summary(
+    by = sport,
+    statistic = list(
+      age ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "ifany"
+  ) |>
+  add_overall(last = TRUE) |>
+  add_p() |>
+  bold_labels()
+```
+
+# 9. Boxplot de l’âge selon le sport
+
+```{r}
+#| eval: false
+ggplot(
+  df,
+  aes(
+    x = sport,
+    y = age
+  )
+) +
+  geom_boxplot() +
+  labs(
+    x = "Pratique du sport",
+    y = "Âge",
+    title = "Âge selon la pratique sportive"
+  ) +
+  theme_minimal()
+```
+
+# 10. Barplot proportionnel âge × sport
+
+```{r}
+#| eval: false
+df |>
+  filter(
+    !is.na(age_cat),
+    !is.na(sport)
+  ) |>
+  ggplot(
+    aes(
+      x = age_cat,
+      fill = sport
+    )
+  ) +
+  geom_bar(position = "fill") +
+  labs(
+    x = "Tranche d’âge",
+    y = "Proportion",
+    fill = "Sport",
+    title = "Pratique sportive selon l’âge"
+  ) +
+  theme_minimal()
+```
+
+# 11. Barplot cinéma × sexe
+
+```{r}
+#| eval: false
+df |>
+  filter(
+    !is.na(sexe),
+    !is.na(cinema)
+  ) |>
+  ggplot(
+    aes(
+      x = sexe,
+      fill = cinema
+    )
+  ) +
+  geom_bar(position = "fill") +
+  labs(
+    x = "Sexe",
+    y = "Proportion",
+    fill = "Cinéma",
+    title = "Pratique du cinéma selon le sexe"
+  ) +
+  theme_minimal()
+```
+
+# 12. Trame de commentaire
+
+Une réponse de qualité ne doit pas commencer par “p < 0,05”.
+
+Structure recommandée :
+
+> La pratique du sport varie selon l’âge : les pourcentages montrent que [décrire le contraste principal avec les chiffres produits]. Le test du χ² indique que la distribution de la pratique sportive n’est pas compatible avec une stricte indépendance vis-à-vis de la tranche d’âge au seuil retenu [adapter au résultat]. Les résidus standardisés permettent de repérer les groupes qui contribuent le plus à cette association. Une lecture sociologique peut mobiliser les différences de cycle de vie, de disponibilité temporelle ou de socialisation sportive. Toutefois, cette comparaison est bivariée : elle ne permet pas de distinguer l’effet propre de l’âge de celui du niveau d’études, de l’activité ou d’autres caractéristiques. Les effectifs utilisés doivent également être vérifiés en raison des valeurs manquantes.
