@@ -1,0 +1,56 @@
+project:
+  type: book
+
+book:
+  title: "Analyse des données d’enquête avec R"
+  subtitle: "M2 Sociologie — Évaluation et conseil"
+  author: "Sorbonne Université"
+  chapters:
+    - index.qmd
+    - 00-guide-enseignant.qmd
+    - 01-demarrer.qmd
+    - 02-preparer.qmd
+    - 03-decrire-tester.qmd
+    - 04-regression-logistique.qmd
+    - 05-acm.qmd
+    - 06-ponderations.qmd
+    - 07-projet-conseil.qmd
+    - part: "Exercices"
+      chapters:
+        - exercices/01-hdv2003-pratiques.qmd
+        - exercices/02-gss-cat-tv.qmd
+        - exercices/03-survey-tabac.qmd
+        - exercices/04-housing-satisfaction.qmd
+        - exercices/05-gssvocab.qmd
+        - exercices/06-biofam.qmd
+    - part: "Corrigés"
+      chapters:
+        - corriges/01-hdv2003-pratiques.qmd
+        - corriges/02-gss-cat-tv.qmd
+        - corriges/03-survey-tabac.qmd
+        - corriges/04-housing-satisfaction.qmd
+        - corriges/05-gssvocab.qmd
+        - corriges/06-biofam.qmd
+    - part: "Évaluation"
+      chapters:
+        - evaluation/examen-blanc.qmd
+        - evaluation/bareme.qmd
+    - part: "Annexes"
+      chapters:
+        - annexes/migration-ancien-contenu.qmd
+
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: false
+    code-copy: true
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+lang: fr
+execute:
+  warning: false
+  message: false
+  freeze: auto

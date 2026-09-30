@@ -1,0 +1,93 @@
+---
+title: "5 — Analyse des correspondances multiples"
+---
+
+# À quoi sert l’ACM ?
+
+L’ACM sert à explorer les structures d’association entre plusieurs **variables qualitatives**. Elle est particulièrement adaptée à l’étude de profils sociaux, de pratiques ou d’attitudes.
+
+Elle ne “prouve” pas des groupes sociaux déjà existants : elle construit un espace synthétique dans lequel les modalités qui apparaissent souvent dans des profils similaires tendent à se rapprocher.
+
+# 1. Préparer les variables
+
+```{r}
+#| eval: false
+df_acm <- df |>
+  select(sexe, age_cat, etudes, sport, cinema, cuisine, bricol) |>
+  drop_na() |>
+  mutate(across(everything(), as.factor))
+
+summary(df_acm)
+```
+
+Les modalités rares peuvent déstabiliser la lecture. On peut les regrouper, mais seulement avec une justification substantielle.
+
+# 2. Variables actives et illustratives
+
+Les **variables actives** construisent les axes.  
+Les **variables illustratives** sont projetées après coup et n’influencent pas la construction.
+
+Exemple :
+
+```{r}
+#| eval: false
+acm_1 <- FactoMineR::MCA(
+  df_acm,
+  quali.sup = 1:2,
+  graph = FALSE
+)
+```
+
+Ici, les deux premières colonnes sont illustratives.
+
+# 3. Valeurs propres
+
+```{r}
+#| eval: false
+acm_1$eig
+factoextra::fviz_screeplot(acm_1)
+```
+
+L’inertie de l’ACM est souvent répartie sur de nombreuses dimensions. On ne choisit pas les axes uniquement à partir d’un seuil mécanique : on combine inertie, contributions et intelligibilité sociologique.
+
+# 4. Carte des modalités
+
+```{r}
+#| eval: false
+factoextra::fviz_mca_var(
+  acm_1,
+  repel = TRUE
+)
+```
+
+## Comment lire la carte ?
+
+Ne lisez pas seulement la proximité visuelle. Pour chaque axe :
+
+1. repérez les modalités éloignées de l’origine ;
+2. examinez les contributions ;
+3. regardez les oppositions entre côtés de l’axe ;
+4. cherchez une interprétation commune ;
+5. nommez l’axe avec prudence.
+
+# 5. Contributions
+
+```{r}
+#| eval: false
+factoextra::fviz_contrib(acm_1, choice = "var", axes = 1)
+factoextra::fviz_contrib(acm_1, choice = "var", axes = 2)
+```
+
+Une modalité proche de l’origine contribue peu à la structuration d’un axe, même si son étiquette attire l’œil.
+
+# 6. Trame d’interprétation
+
+**Axe 1.** “L’axe 1 oppose principalement … à … . Cette opposition est portée par les modalités …, qui contribuent fortement à l’axe. Sociologiquement, cet axe peut être lu comme …”
+
+**Axe 2.** Même structure, sans chercher à reproduire l’interprétation du premier axe.
+
+# 7. Variables illustratives
+
+Elles servent à répondre à une question complémentaire : “où se situent les groupes d’âge / la pratique / le statut d’intérêt dans l’espace construit par les variables actives ?”
+
+On ne conclut pas à une causalité à partir de leur position.

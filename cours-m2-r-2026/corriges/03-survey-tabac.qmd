@@ -1,0 +1,139 @@
+---
+title: "Corrigé 3 — Tabagisme et activité physique avec MASS::survey"
+---
+
+# 1. Diagnostic
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(MASS)
+library(gtsummary)
+library(FactoMineR)
+library(factoextra)
+
+data(survey, package = "MASS")
+df <- survey
+
+glimpse(df)
+lapply(df[c("Sex", "Exer", "Smoke", "W.Hnd", "Fold", "Clap")], levels)
+summary(df$Age)
+summary(df$Height)
+```
+
+# 2. Recodages
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    smoker = case_when(
+      Smoke == "Never" ~ "Non-fumeur",
+      Smoke %in% c("Occas", "Regul", "Heavy") ~ "Fumeur",
+      TRUE ~ NA_character_
+    ),
+    smoker = factor(smoker, levels = c("Non-fumeur", "Fumeur")),
+    smoker01 = if_else(smoker == "Fumeur", 1L, 0L, missing = NA_integer_),
+
+    active = case_when(
+      Exer == "Freq" ~ "Très actif",
+      Exer %in% c("Some", "None") ~ "Peu actif",
+      TRUE ~ NA_character_
+    ),
+    active = factor(active, levels = c("Peu actif", "Très actif")),
+
+    age_cat = cut(
+      Age,
+      breaks = c(-Inf, 20, 25, Inf),
+      right = FALSE,
+      labels = c("<20", "20–24", "25+")
+    )
+  )
+
+table(df$Smoke, df$smoker, useNA = "ifany")
+table(df$Exer, df$active, useNA = "ifany")
+table(df$Age, df$age_cat, useNA = "ifany")
+```
+
+**Pourquoi regrouper les fumeurs ?** L’exercice transforme quatre modalités de tabagisme en une opposition binaire afin d’utiliser une régression logistique simple. On perd de l’information sur l’intensité ; cette perte doit être mentionnée.
+
+# 3. Descriptif
+
+```{r}
+#| eval: false
+df_reg <- df |>
+  select(smoker, smoker01, Sex, age_cat, active, Height) |>
+  drop_na()
+
+df_reg |>
+  select(smoker, Sex, age_cat, active, Height) |>
+  tbl_summary(
+    by = smoker,
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    )
+  ) |>
+  add_p()
+```
+
+Ne déduisez pas un “effet” de la seule significativité. Commencez par décrire les proportions ou moyennes.
+
+# 4. Modèle logistique
+
+```{r}
+#| eval: false
+modele <- glm(
+  smoker01 ~ Sex + age_cat + active + Height,
+  data = df_reg,
+  family = binomial(link = "logit")
+)
+
+modele |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  add_global_p()
+```
+
+## Lecture guidée
+
+Pour chaque variable :
+
+- quelle catégorie sert de référence ?
+- l’OR est-il supérieur ou inférieur à 1 ?
+- l’IC95 % est-il précis ou large ?
+- le résultat descriptif allait-il dans le même sens ?
+- le modèle modifie-t-il la comparaison brute ?
+
+Avec un petit échantillon, des intervalles larges sont attendus. Un résultat “non significatif” n’équivaut pas à une preuve d’absence de différence.
+
+# 5. ACM
+
+```{r}
+#| eval: false
+df_acm <- df |>
+  select(Sex, W.Hnd, Fold, Clap, Exer, smoker) |>
+  drop_na() |>
+  mutate(across(everything(), as.factor))
+
+acm <- FactoMineR::MCA(
+  df_acm,
+  quali.sup = 6,
+  graph = FALSE
+)
+
+acm$eig
+factoextra::fviz_mca_var(acm, repel = TRUE)
+factoextra::fviz_contrib(acm, choice = "var", axes = 1)
+factoextra::fviz_contrib(acm, choice = "var", axes = 2)
+```
+
+# 6. Interprétation
+
+L’ACM complète la régression : elle ne cherche pas à “prédire” le tabagisme. Elle montre comment les modalités actives se structurent dans un espace commun, puis où se projettent fumeurs et non-fumeurs.
+
+Une bonne conclusion peut donc écrire :
+
+> “Le modèle évalue les associations conditionnelles avec le statut de fumeur, tandis que l’ACM met en évidence des configurations de comportements et de latéralité. La proximité d’une modalité avec ‘Fumeur’ dans le plan ne constitue pas un effet causal.”

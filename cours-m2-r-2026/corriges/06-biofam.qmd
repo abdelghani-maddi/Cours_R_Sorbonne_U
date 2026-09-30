@@ -1,0 +1,211 @@
+---
+title: "Corrigé 6 — Trajectoires familiales avec biofam"
+---
+
+# 1. Charger les données
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(TraMineR)
+library(gtsummary)
+library(FactoMineR)
+library(factoextra)
+
+data(biofam, package = "TraMineR")
+df <- biofam
+
+dim(df)
+glimpse(df)
+names(df)[grepl("^a[0-9]+$", names(df))]
+```
+
+# 2. Définir les séquences
+
+Les colonnes `a15` à `a30` décrivent la situation familiale à chaque âge.
+
+```{r}
+#| eval: false
+seq_cols <- paste0("a", 15:30)
+
+bf.seq <- TraMineR::seqdef(
+  df[, seq_cols]
+)
+
+bf.seq
+attr(bf.seq, "alphabet")
+attr(bf.seq, "labels")
+```
+
+::: callout-warning
+Le corrigé **ne fixe pas à la main les codes “avec enfant”**. Il les récupère depuis les attributs de l’objet de séquences. Cela évite de fabriquer une variable dépendante à partir d’un souvenir approximatif du codage.
+:::
+
+# 3. Visualiser les trajectoires
+
+```{r}
+#| eval: false
+set.seed(123)
+idx <- sample(seq_len(nrow(df)), 50)
+
+seqIplot(bf.seq[idx, ], border = NA)
+seqdplot(bf.seq)
+```
+
+## Commenter
+
+Une lecture correcte distingue :
+
+- la diversité des trajectoires individuelles dans l’index plot ;
+- l’évolution de la distribution des états avec l’âge dans le distribution plot.
+
+On décrit d’abord **quand** certains états deviennent plus fréquents. On n’en déduit pas encore pourquoi.
+
+# 4. Construire parent30 de manière reproductible
+
+On identifie les labels mentionnant un enfant :
+
+```{r}
+#| eval: false
+alphabet <- attr(bf.seq, "alphabet")
+labels <- attr(bf.seq, "labels")
+
+dico_etats <- tibble(
+  code = alphabet,
+  label = labels
+)
+
+dico_etats
+```
+
+Puis :
+
+```{r}
+#| eval: false
+child_codes <- dico_etats |>
+  filter(grepl("child", label, ignore.case = TRUE)) |>
+  pull(code)
+
+child_codes
+```
+
+**Contrôle obligatoire :** lisez les labels retournés. Si le vocabulaire de la version du package diffère, adaptez le motif de recherche.
+
+```{r}
+#| eval: false
+seq_matrix <- as.matrix(bf.seq)
+
+parent30 <- apply(
+  seq_matrix,
+  1,
+  function(x) any(x %in% child_codes)
+)
+
+df <- df |>
+  mutate(parent30 = as.integer(parent30))
+
+table(df$parent30, useNA = "ifany")
+prop.table(table(df$parent30)) * 100
+```
+
+# 5. Contrôle manuel
+
+```{r}
+#| eval: false
+controle <- tibble(
+  id_ligne = 1:10,
+  parent30 = df$parent30[1:10]
+) |>
+  bind_cols(as.data.frame(seq_matrix[1:10, ]))
+
+controle
+```
+
+On vérifie visuellement qu’une ligne codée 1 contient bien au moins un état de `child_codes`.
+
+# 6. Cohorte et jeu de régression
+
+```{r}
+#| eval: false
+summary(df$birthyr)
+
+df <- df |>
+  mutate(
+    cohort = cut(
+      birthyr,
+      breaks = c(-Inf, 1935, 1945, Inf),
+      right = TRUE,
+      labels = c("1935 et avant", "1936–1945", "1946 et après")
+    )
+  )
+
+df_reg <- df |>
+  select(parent30, sex, cohort, nat_1_02, p02r01, cspfaj) |>
+  drop_na()
+
+lapply(df_reg[-1], function(x) if (is.factor(x)) levels(x) else unique(x))
+```
+
+Pour `p02r01` ou `cspfaj`, regroupez uniquement si certaines modalités ont des effectifs trop faibles **et documentez le regroupement**.
+
+# 7. Régression
+
+```{r}
+#| eval: false
+modele <- glm(
+  parent30 ~ sex + cohort + nat_1_02 + p02r01 + cspfaj,
+  data = df_reg,
+  family = binomial(link = "logit")
+)
+
+modele |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  add_global_p()
+```
+
+## Interprétation attendue
+
+Pour le sexe, la cohorte et le statut social du père :
+
+1. nommer la référence ;
+2. donner l’OR et l’IC95 % ;
+3. traduire l’association ;
+4. éviter les formulations causales.
+
+Pour la cohorte, l’interprétation peut être formulée en termes de différences générationnelles de calendrier familial, mais le modèle seul n’identifie pas le mécanisme historique précis.
+
+# 8. ACM socio-culturelle
+
+```{r}
+#| eval: false
+df_acm <- df |>
+  select(
+    sex, cohort, nat_1_02, plingu02,
+    p02r01, p02r04, cspfaj, parent30
+  ) |>
+  drop_na() |>
+  mutate(
+    across(-parent30, as.factor),
+    parent30 = factor(parent30, levels = c(0, 1), labels = c("Non", "Oui"))
+  )
+
+acm <- FactoMineR::MCA(
+  df_acm,
+  quali.sup = 8,
+  graph = FALSE
+)
+
+acm$eig
+factoextra::fviz_mca_var(acm, repel = TRUE)
+factoextra::fviz_contrib(acm, choice = "var", axes = 1)
+factoextra::fviz_contrib(acm, choice = "var", axes = 2)
+```
+
+# 9. Interpréter parent30 comme illustrative
+
+La position des modalités “Oui” et “Non” indique comment elles se projettent dans l’espace socio-culturel, **sans contribuer à sa construction**.
+
+Une conclusion forte exige que la position soit nette et cohérente avec les modalités contribuant aux axes. Si les deux modalités sont proches de l’origine ou peu séparées, il faut le dire : l’ACM ne fournit alors pas de profil factoriel très marqué de parentalité avant 30 ans.

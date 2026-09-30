@@ -1,0 +1,117 @@
+---
+title: "Guide enseignant"
+---
+
+# Positionnement
+
+Public : **M2 professionnel de sociologie, parcours Évaluation et conseil**.
+
+Le cours vise l’autonomie analytique plutôt que la technicité informatique. Les étudiants doivent pouvoir reprendre un fichier fourni par une administration, une association, un cabinet ou une équipe de recherche et produire une analyse argumentée.
+
+# Compétences finales
+
+À la fin du module, l’étudiant doit pouvoir :
+
+- distinguer individu, ménage, profil agrégé et observation pondérée ;
+- construire un dictionnaire minimal des variables utiles ;
+- identifier les modalités spéciales et les valeurs manquantes ;
+- justifier un recodage et vérifier qu’il n’a pas créé d’erreur ;
+- produire des statistiques descriptives adaptées ;
+- lire un tableau croisé, un test du χ² et une p-valeur sans les surinterpréter ;
+- estimer une régression logistique, identifier les références et interpréter un odds ratio ;
+- préférer les probabilités prédites quand elles améliorent la communication ;
+- tester une interaction et la représenter ;
+- réaliser une ACM sur des variables qualitatives et interpréter les contributions ;
+- utiliser des poids lorsque les lignes ne représentent pas toutes le même nombre d’individus ;
+- rédiger une conclusion utile à l’évaluation et au conseil.
+
+# Déroulé recommandé
+
+## Séance 1 — Comprendre avant de manipuler
+
+**Objectifs :** RStudio, projet, script, objets, types, dictionnaire, unité d’analyse.
+
+**Activité :** `hdv2003`, diagnostic en binômes.
+
+**Sortie :** une fiche “ce que je sais / ce que je dois vérifier”.
+
+## Séance 2 — Préparer un jeu d’enquête
+
+**Objectifs :** sélection, filtrage, doublons, NA, recodages, facteurs, références.
+
+**Activité :** création d’un jeu d’analyse consacré aux pratiques culturelles.
+
+**Sortie :** tableau de contrôle avant/après recodage.
+
+## Séance 3 — Décrire et comparer
+
+**Objectifs :** proportions, moyenne/médiane, tableaux croisés, `tbl_summary()`, `add_p()`, χ².
+
+**Activité :** profil des pratiquants et non-pratiquants.
+
+**Sortie :** tableau commenté en 8 à 10 lignes.
+
+## Séance 4 — Régression logistique
+
+**Objectifs :** variable binaire, catégorie de référence, logit, OR, IC95 %, p-value, interaction.
+
+**Activité :** pratique du sport ou de la cuisine dans `hdv2003`.
+
+**Sortie :** modèle principal + interprétation de trois effets.
+
+## Séance 5 — ACM
+
+**Objectifs :** variables actives/illustratives, inertie, contributions, coordonnées, lecture du plan 1–2.
+
+**Activité :** espace des loisirs et caractéristiques sociales.
+
+**Sortie :** deux axes nommés et argumentés à partir des modalités contributrices.
+
+## Séance 6 — Pondérations et données agrégées
+
+**Objectifs :** différence entre `n` brut et effectif pondéré, objet `survey.design`, `tbl_svysummary()`, modèle pondéré.
+
+**Activité :** `MASS::housing`.
+
+**Sortie :** comparaison naïve / pondérée.
+
+## Séance 7 — Mise en situation professionnelle
+
+**Objectifs :** répondre à une commande, choisir les analyses, documenter les limites, produire une note.
+
+**Activité :** mini-projet de 90 minutes sur un jeu nouveau.
+
+**Sortie :** 2 pages + script reproductible.
+
+# Rythme d’une séance de 3 heures
+
+- 20 min : question et concepts ;
+- 25 min : démonstration commentée ;
+- 45 min : exercice guidé ;
+- 15 min : correction collective ;
+- 45 min : exercice autonome ;
+- 20 min : correction et interprétation ;
+- 10 min : synthèse / “ce qu’il faut retenir”.
+
+# Évaluation
+
+La grille privilégie :
+
+| Dimension | Poids indicatif |
+|---|---:|
+| Préparation et reproductibilité | 25 % |
+| Choix méthodologiques | 20 % |
+| Exactitude du code | 20 % |
+| Lecture des résultats | 15 % |
+| Interprétation sociologique | 15 % |
+| Clarté de la restitution | 5 % |
+
+Une bonne copie ne se limite donc jamais à des commandes R. Elle explicite les choix et les relie à la question étudiée.
+
+# Ce que l’on retire du premier plan de cours
+
+Certaines briques de l’ancien dépôt restent utiles : `questionr::hdv2003`, `labelled`, `gtsummary`, l’ACM, les effets marginaux et la pondération. En revanche, l’ACP et la CAH deviennent des **compléments**, car elles ne doivent pas interrompre la progression principale “préparation → description → modèle → ACM”.
+
+# Exigence de reproductibilité
+
+Aucun chemin absolu du type `C:/Users/...`. Le cours doit être exécutable depuis le projet, sur Windows, macOS ou Linux.

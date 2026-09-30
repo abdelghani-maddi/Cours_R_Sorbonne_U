@@ -1,0 +1,196 @@
+---
+title: "Corrigé 2 — Télévision et profils sociaux avec gss_cat"
+---
+
+# 1. Charger et sélectionner
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(forcats)
+library(gtsummary)
+library(FactoMineR)
+library(factoextra)
+
+data(gss_cat, package = "forcats")
+
+df <- gss_cat |>
+  select(age, sex, marital, relig, race, rincome, partyid, tvhours)
+
+glimpse(df)
+lapply(df[c("marital", "relig", "race", "rincome", "partyid")], levels)
+```
+
+Le contrôle des niveaux est indispensable : `rincome` contient des catégories de revenu et des modalités de non-réponse.
+
+# 2. Variables dérivées
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    age_cat = cut(
+      age,
+      breaks = c(18, 35, 55, Inf),
+      right = FALSE,
+      labels = c("18–34", "35–54", "55+")
+    ),
+    tv_high = case_when(
+      is.na(tvhours) ~ NA_integer_,
+      tvhours >= 3 ~ 1L,
+      TRUE ~ 0L
+    )
+  )
+
+table(df$age_cat, useNA = "ifany")
+table(df$tv_high, useNA = "ifany")
+```
+
+# 3. Revenu : recoder sans masquer la non-réponse
+
+On conserve une catégorie explicite de non-réponse afin de ne pas la confondre avec un faible revenu.
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    rincome_rec = case_when(
+      rincome %in% c("No answer", "Don't know", "Refused") ~ "Non-réponse",
+      rincome %in% c(
+        "Lt $1000", "$1000 to 2999", "$3000 to 3999",
+        "$4000 to 4999", "$5000 to 5999", "$6000 to 6999",
+        "$7000 to 7999", "$8000 to 9999"
+      ) ~ "Bas",
+      rincome %in% c("$10000 - 14999", "$15000 - 19999") ~ "Moyen",
+      rincome %in% c("$20000 - 24999", "$25000 or more") ~ "Élevé",
+      TRUE ~ NA_character_
+    ),
+    rincome_rec = factor(
+      rincome_rec,
+      levels = c("Bas", "Moyen", "Élevé", "Non-réponse")
+    )
+  )
+
+table(df$rincome, df$rincome_rec, useNA = "ifany")
+```
+
+::: callout-warning
+Les seuils sont un **choix pédagogique**, pas une vérité substantielle. Dans une étude réelle, les catégories devraient être justifiées par la distribution, l’année de l’enquête, le niveau des prix et la question de recherche.
+:::
+
+# 4. Descriptif et comparaison
+
+```{r}
+#| eval: false
+df2 <- df |>
+  drop_na(age_cat, sex, marital, rincome_rec, tv_high)
+
+df2 |>
+  select(age, age_cat, sex, marital, relig, race, rincome_rec, tvhours, tv_high) |>
+  tbl_summary(missing = "ifany")
+```
+
+```{r}
+#| eval: false
+df2 |>
+  select(tv_high, age_cat, sex, marital, rincome_rec) |>
+  tbl_summary(
+    by = tv_high,
+    statistic = all_categorical() ~ "{n} ({p}%)"
+  ) |>
+  add_p()
+```
+
+# 5. Âge × télévision
+
+```{r}
+#| eval: false
+tab_age <- table(df2$age_cat, df2$tv_high)
+prop.table(tab_age, margin = 1) * 100
+
+test_age <- chisq.test(tab_age)
+test_age
+test_age$expected
+```
+
+**Lecture.** Les pourcentages donnent le **sens et l’ampleur** de l’association ; le χ² renseigne sur la compatibilité avec l’hypothèse d’indépendance.
+
+# 6. Modèle logistique
+
+```{r}
+#| eval: false
+modele_1 <- glm(
+  tv_high ~ age_cat + sex + marital + rincome_rec,
+  data = df2,
+  family = binomial()
+)
+
+modele_1 |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  add_global_p()
+```
+
+## À commenter
+
+Pour `age_cat`, `marital` et `rincome_rec`, choisissez une modalité non-référence et rédigez :
+
+> “À sexe, statut matrimonial et revenu inclus dans le modèle comparables, la modalité X présente des cotes de forte consommation de télévision multipliées par OR par rapport à la modalité de référence.”
+
+Puis ajoutez l’IC95 %. Si l’intervalle est large, signalez l’incertitude.
+
+# 7. Interaction âge × revenu
+
+```{r}
+#| eval: false
+modele_2 <- glm(
+  tv_high ~ age_cat * rincome_rec + sex + marital,
+  data = df2,
+  family = binomial()
+)
+
+anova(modele_1, modele_2, test = "Chisq")
+```
+
+Si le test n’apporte pas d’amélioration convaincante, le modèle sans interaction reste plus parcimonieux. Si l’interaction est informative, visualisez les probabilités prédites plutôt que d’interpréter coefficient par coefficient.
+
+# 8. ACM
+
+Pour la lisibilité, on peut regrouper les modalités très rares de `relig` et `partyid`. Toute fusion doit être montrée et justifiée.
+
+```{r}
+#| eval: false
+df_acm <- df |>
+  transmute(
+    marital,
+    relig = fct_lump_min(relig, min = 100, other_level = "Autres religions"),
+    race,
+    rincome_rec,
+    partyid = fct_lump_min(partyid, min = 100, other_level = "Autres positions"),
+    age_cat,
+    tv_high = factor(tv_high, levels = c(0, 1), labels = c("< 3 h", "3 h ou +"))
+  ) |>
+  drop_na()
+
+acm <- FactoMineR::MCA(
+  df_acm,
+  quali.sup = 6:7,
+  graph = FALSE
+)
+
+acm$eig
+factoextra::fviz_screeplot(acm)
+factoextra::fviz_mca_var(acm, repel = TRUE)
+factoextra::fviz_contrib(acm, choice = "var", axes = 1)
+factoextra::fviz_contrib(acm, choice = "var", axes = 2)
+```
+
+# 9. Comment articuler les trois analyses ?
+
+- **Descriptif** : montre les écarts bruts.
+- **Régression** : compare les profils conditionnellement aux autres variables du modèle.
+- **ACM** : décrit un espace multidimensionnel d’associations entre modalités.
+
+Elles ne répondent donc pas exactement à la même question. La conclusion doit distinguer ces trois niveaux plutôt que chercher à forcer une histoire unique.

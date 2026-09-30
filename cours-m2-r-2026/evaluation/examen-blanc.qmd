@@ -1,0 +1,51 @@
+---
+title: "Examen blanc — Analyse de données d’enquête avec R"
+---
+
+# Format
+
+Durée indicative : **2 h 30**. Documents autorisés selon les règles fixées par l’enseignant.
+
+Jeu : `forcats::gss_cat`.
+
+# Compétences évaluées
+
+Vous devez produire un script lisible et reproductible, joindre les sorties utiles et **rédiger** vos interprétations.
+
+# Partie 1 — Préparer les données (25 points)
+
+1. Charger les packages utiles et `gss_cat`.
+2. Conserver `age`, `sex`, `marital`, `relig`, `rincome`, `partyid`, `tvhours`.
+3. Produire un diagnostic des valeurs manquantes.
+4. Créer :
+   - `age_cat` : 18–34 / 35–54 / 55+ ;
+   - `tv_high` : moins de 3 h / 3 h ou plus.
+5. Regrouper `rincome` en catégories lisibles. Justifier les regroupements.
+6. Indiquer l’effectif avant et après nettoyage.
+
+# Partie 2 — Décrire et comparer (25 points)
+
+7. Produire un tableau descriptif global.
+8. Produire un tableau stratifié par `tv_high` et ajouter les tests pertinents.
+9. Construire un tableau croisé entre `age_cat` et `tv_high`.
+10. Réaliser le test adapté et en expliciter l’hypothèse nulle.
+11. Rédiger 8 lignes maximum sur deux différences importantes.
+
+# Partie 3 — Modéliser (30 points)
+
+12. Estimer un modèle logistique expliquant `tv_high` par `age_cat + sex + marital + rincome_rec`.
+13. Présenter les OR et IC95 %.
+14. Interpréter trois OR.
+15. Tester une interaction `age_cat * rincome_rec`.
+16. Dire si vous conserveriez cette interaction et justifier à partir d’un test et/ou d’une visualisation.
+
+# Partie 4 — Explorer les profils (20 points)
+
+17. Réaliser une ACM sur `marital`, `relig`, `rincome_rec`, `partyid`, avec `age_cat` et `tv_high` illustratives.
+18. Présenter les valeurs propres et contributions.
+19. Nommer les deux premiers axes.
+20. Conclure en 100 mots : que montre l’ACM que le modèle logistique ne montre pas ?
+
+# Attendu transversal
+
+Une réponse techniquement correcte mais sans interprétation ne peut pas obtenir tous les points. Toute décision de recodage doit être vérifiée par une sortie de contrôle.

@@ -1,0 +1,31 @@
+---
+title: "Exercice 2 — Télévision et profils sociaux avec gss_cat"
+---
+
+# Contexte
+
+Le jeu `gss_cat` du package `forcats` contient un sous-ensemble de variables du General Social Survey américain.
+
+# Question
+
+Quels profils sociodémographiques sont associés au fait de regarder **au moins 3 heures de télévision par jour** ?
+
+# Étapes
+
+1. Charger `gss_cat` et conserver `age`, `sex`, `marital`, `relig`, `race`, `rincome`, `partyid`, `tvhours`.
+2. Inspecter les modalités spéciales de `rincome` et `partyid`.
+3. Créer `age_cat` : 18–34, 35–54, 55+.
+4. Créer `tv_high` : 1 si `tvhours >= 3`, 0 sinon.
+5. Recoder `rincome` en un nombre raisonnable de catégories. Votre code doit être précédé d’une phrase qui justifie les regroupements.
+6. Produire un tableau descriptif global.
+7. Produire un tableau par `tv_high` avec `add_p()`.
+8. Construire un tableau croisé `age_cat × tv_high` et effectuer un χ².
+9. Estimer une régression logistique de `tv_high` sur `age_cat + sex + marital + rincome_rec`.
+10. Présenter les OR et interpréter au moins un contraste pour l’âge, le statut matrimonial et le revenu.
+11. Tester `age_cat * rincome_rec`.
+12. Réaliser une ACM sur `marital`, `relig`, `race`, `rincome_rec`, `partyid`, avec `age_cat` et `tv_high` illustratives.
+13. Nommer les deux premiers axes à partir des modalités qui contribuent réellement à leur construction.
+
+# Question finale
+
+Les analyses descriptive, multivariée et factorielle racontent-elles la même histoire ? Distinguez ce qui est robuste de ce qui dépend du codage ou de la méthode.

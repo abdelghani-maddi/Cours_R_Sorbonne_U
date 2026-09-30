@@ -1,0 +1,40 @@
+---
+title: "Exercice 6 — Trajectoires familiales avec biofam"
+---
+
+# Contexte
+
+`TraMineR::biofam` contient des trajectoires familiales entre 15 et 30 ans ainsi que des caractéristiques de contexte.
+
+# Partie A — Lire des séquences
+
+1. Charger `biofam`.
+2. Repérer les colonnes `a15` à `a30`.
+3. Consulter la documentation du jeu pour identifier précisément les codes d’état.
+4. Construire un objet de séquences avec `TraMineR::seqdef()`.
+5. Produire un `seqIplot()` pour un petit sous-échantillon puis un `seqdplot()`.
+6. Décrire deux tendances visibles sans transformer immédiatement la visualisation en explication causale.
+
+# Partie B — Parentalité avant 30 ans
+
+7. Identifier, à partir de la documentation du jeu, les états correspondant à la présence d’enfant(s).
+8. Construire `parent30` = 1 si au moins un de ces états apparaît entre 15 et 30 ans.
+9. Vérifier manuellement le codage sur quelques lignes.
+10. Calculer la proportion de `parent30 == 1`.
+
+# Partie C — Modèle
+
+11. Créer une cohorte de naissance pertinente.
+12. Préparer `sex`, `cohort`, `nat_1_02`, `p02r01`, `cspfaj`.
+13. Estimer `parent30 ~ sex + cohort + nat_1_02 + p02r01 + cspfaj`.
+14. Présenter les OR et interpréter un effet de sexe, de cohorte et d’origine sociale.
+
+# Partie D — ACM
+
+15. Réaliser une ACM des variables socio-culturelles avec `parent30` comme variable illustrative.
+16. Interpréter les deux premiers axes.
+17. Discuter la position de `parent30` : est-elle suffisamment structurante pour parler d’un profil spécifique ?
+
+# Vigilance
+
+Le codage de `parent30` doit être dérivé des **étiquettes exactes de `biofam`**. Une réponse qui suppose les codes sans vérifier la documentation n’est pas considérée comme reproductible.

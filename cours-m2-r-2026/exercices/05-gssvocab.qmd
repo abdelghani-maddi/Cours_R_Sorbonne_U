@@ -1,0 +1,21 @@
+---
+title: "Exercice 5 — Éducation et vocabulaire avec GSSvocab"
+---
+
+# Contexte
+
+`carData::GSSvocab` contient des observations issues du General Social Survey américain, avec notamment le score `vocab`, l’éducation, l’âge, le genre, le statut de naissance aux États-Unis et l’année d’enquête.
+
+# Travail
+
+1. Inspecter le jeu et documenter `vocab`, `educGroup`, `ageGroup`, `gender`, `nativeBorn`, `year`.
+2. Calculer la médiane de `vocab`.
+3. Créer `vocab_high` : vocabulaire élevé si `vocab` est supérieur ou égal à la médiane.
+4. Vérifier l’équilibre des deux groupes. Que produit le choix “>= médiane” en cas de nombreuses valeurs égales à la médiane ?
+5. Produire un tableau descriptif stratifié par `vocab_high`.
+6. Réaliser un χ² entre `vocab_high` et `educGroup`.
+7. Estimer :
+   `vocab_high ~ educGroup + ageGroup + gender + nativeBorn + year`.
+8. Identifier les références et interpréter trois OR avec leurs IC95 %.
+9. Réaliser une ACM avec `gender`, `nativeBorn`, `ageGroup`, `educGroup`, `year` actives et `vocab_high` illustrative.
+10. Discuter ce que le modèle et l’ACM disent différemment de la relation entre éducation et vocabulaire.

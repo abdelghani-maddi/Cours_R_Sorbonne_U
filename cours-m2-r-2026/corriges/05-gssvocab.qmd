@@ -1,0 +1,139 @@
+---
+title: "Corrigé 5 — Éducation et vocabulaire avec GSSvocab"
+---
+
+# 1. Diagnostic
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(carData)
+library(gtsummary)
+library(FactoMineR)
+library(factoextra)
+
+data(GSSvocab, package = "carData")
+df <- GSSvocab
+
+glimpse(df)
+summary(df$vocab)
+lapply(df[c("year", "gender", "nativeBorn", "ageGroup", "educGroup")], levels)
+```
+
+# 2. Construire vocab_high
+
+```{r}
+#| eval: false
+mediane_vocab <- median(df$vocab, na.rm = TRUE)
+mediane_vocab
+
+df <- df |>
+  mutate(
+    vocab_high = case_when(
+      is.na(vocab) ~ NA_character_,
+      vocab >= mediane_vocab ~ "Vocabulaire élevé",
+      TRUE ~ "Vocabulaire faible"
+    ),
+    vocab_high = factor(
+      vocab_high,
+      levels = c("Vocabulaire faible", "Vocabulaire élevé")
+    ),
+    vocab_high01 = case_when(
+      is.na(vocab) ~ NA_integer_,
+      vocab >= mediane_vocab ~ 1L,
+      TRUE ~ 0L
+    )
+  )
+
+table(df$vocab_high, useNA = "ifany")
+```
+
+## Pourquoi les groupes ne sont-ils pas nécessairement 50/50 ?
+
+Si beaucoup d’individus ont exactement le score médian, la règle `>= médiane` les place tous dans le groupe “élevé”. Une médiane ne garantit donc pas deux groupes d’effectif égal.
+
+# 3. Tableau descriptif
+
+```{r}
+#| eval: false
+df |>
+  select(vocab_high, year, gender, nativeBorn, ageGroup, educGroup, vocab) |>
+  tbl_summary(
+    by = vocab_high,
+    missing = "ifany"
+  ) |>
+  add_p()
+```
+
+# 4. Éducation × vocabulaire
+
+```{r}
+#| eval: false
+tab <- table(df$educGroup, df$vocab_high)
+prop.table(tab, margin = 1) * 100
+
+test <- chisq.test(tab)
+test
+test$expected
+```
+
+Pour commenter, commencez par le gradient des pourcentages selon l’éducation, puis seulement ensuite mentionnez le test.
+
+# 5. Modèle
+
+```{r}
+#| eval: false
+df_reg <- df |>
+  select(vocab_high01, educGroup, ageGroup, gender, nativeBorn, year) |>
+  drop_na()
+
+lapply(df_reg[-1], levels)
+
+modele <- glm(
+  vocab_high01 ~ educGroup + ageGroup + gender + nativeBorn + year,
+  data = df_reg,
+  family = binomial()
+)
+
+modele |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  add_global_p()
+```
+
+## Formulation attendue
+
+> “Par rapport au groupe d’éducation de référence, la modalité X est associée à des cotes de vocabulaire élevé multipliées par OR, à âge, genre, statut de naissance et année d’enquête inclus dans le modèle comparables.”
+
+La formule “toutes choses égales par ailleurs” doit être comprise comme “toutes les variables **présentes dans le modèle** maintenues constantes”, et non comme une égalité parfaite entre individus.
+
+# 6. ACM
+
+```{r}
+#| eval: false
+df_acm <- df |>
+  select(gender, nativeBorn, ageGroup, educGroup, year, vocab_high) |>
+  drop_na() |>
+  mutate(across(everything(), as.factor))
+
+acm <- FactoMineR::MCA(
+  df_acm,
+  quali.sup = 6,
+  graph = FALSE
+)
+
+acm$eig
+factoextra::fviz_mca_var(acm, repel = TRUE)
+factoextra::fviz_contrib(acm, choice = "var", axes = 1)
+factoextra::fviz_contrib(acm, choice = "var", axes = 2)
+```
+
+# 7. Modèle et ACM ne font pas le même travail
+
+Le modèle estime une association conditionnelle entre chaque variable et la probabilité d’être dans le groupe de vocabulaire élevé.
+
+L’ACM cherche les principales oppositions dans la configuration des variables qualitatives actives. `vocab_high`, illustrative, sert à observer où les deux niveaux se projettent dans cet espace.
+
+Le modèle répond donc davantage à **“à caractéristiques comparables, quelles variables sont associées au vocabulaire élevé ?”**, tandis que l’ACM répond à **“quels profils sociodémographiques structurent l’espace et où se situe le vocabulaire dans cet espace ?”**.

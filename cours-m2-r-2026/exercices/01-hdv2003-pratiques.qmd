@@ -1,0 +1,51 @@
+---
+title: "Exercice 1 — Pratiques culturelles avec hdv2003"
+---
+
+# Contexte
+
+Le jeu `hdv2003` du package `questionr` décrit des caractéristiques sociodémographiques et des pratiques culturelles et de loisirs en France.
+
+**Question générale :** quels profils sont associés à la pratique de la cuisine ?
+
+# Travail demandé
+
+## A. Diagnostic
+
+1. Charger `hdv2003` dans `df_brut`.
+2. Identifier l’unité d’analyse.
+3. Examiner `cuisine`, `sexe`, `age`, `nivetud`, `occup`, `heures.tv`, `bricol`, `sport`.
+4. Pour chacune, indiquer son type et le nombre de valeurs manquantes.
+
+## B. Préparation
+
+5. Créer :
+   - `age_cat` : 18–34 ; 35–54 ; 55+ ;
+   - `tv_cat` : 0 h ; 1–2 h ; 3 h ou plus ;
+   - `etudes_cat` : primaire ; secondaire ; supérieur ;
+   - `occup_cat` : actifs ; formation/foyer ; hors marché du travail.
+6. Vérifier chaque recodage par un tableau croisé entre variable initiale et variable créée.
+7. Construire `df_analyse` avec les variables nécessaires et documenter le nombre d’observations perdues après suppression des NA.
+
+## C. Description
+
+8. Produire un tableau descriptif global.
+9. Produire le même tableau selon `cuisine`, avec tests.
+10. Choisir **deux écarts** et les commenter en termes sociologiques, sans utiliser la p-value comme mesure d’importance.
+
+## D. Modèle
+
+11. Estimer :
+
+[
+P(cuisine = Oui) = f(sexe, age\_cat, tv\_cat, etudes\_cat, occup\_cat, bricol, sport)
+]
+
+12. Présenter les résultats en odds ratios.
+13. Interpréter trois effets.
+14. Tester l’interaction `sexe * age_cat`.
+15. Représenter les probabilités prédites de cette interaction.
+
+## E. Restitution
+
+Rédiger un encadré de 150 mots maximum intitulé **“Ce que l’on retient”** : deux résultats, une limite et une implication possible pour l’analyse des pratiques domestiques.

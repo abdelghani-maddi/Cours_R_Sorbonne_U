@@ -1,0 +1,27 @@
+---
+title: "Exercice 3 — Tabagisme et activité physique avec MASS::survey"
+---
+
+# Contexte
+
+`MASS::survey` provient d’une enquête auprès d’étudiants d’une université australienne.
+
+# Travail
+
+1. Charger le jeu et inspecter `Sex`, `Exer`, `Smoke`, `Age`, `Height`, `W.Hnd`, `Fold`, `Clap`.
+2. Créer `smoker` :
+   - Non-fumeur si `Smoke == "Never"` ;
+   - Fumeur dans les autres modalités de `Smoke`.
+3. Créer `active` :
+   - Très actif si `Exer == "Freq"` ;
+   - Peu actif sinon.
+4. Créer `age_cat` : <20, 20–24, 25+.
+5. Décrire le profil des fumeurs et non-fumeurs.
+6. Estimer `smoker ~ Sex + age_cat + active + Height`.
+7. Présenter et interpréter les OR.
+8. Réaliser une ACM avec `Sex`, `W.Hnd`, `Fold`, `Clap`, `Exer` actives et `smoker` illustrative.
+9. Rédiger une conclusion qui distingue :
+   - les associations observées ;
+   - les résultats ajustés ;
+   - ce que l’ACM ajoute ;
+   - ce que l’enquête ne permet pas d’affirmer.

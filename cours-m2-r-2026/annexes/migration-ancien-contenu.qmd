@@ -1,0 +1,58 @@
+---
+title: "Migration depuis l’ancien cours"
+---
+
+# Ce qui est conservé
+
+L’ancien dépôt contient plusieurs matériaux pédagogiquement utiles :
+
+- `hdv2003` comme fil rouge sociologique ;
+- `gtsummary` pour les tableaux ;
+- `labelled` pour les labels ;
+- `FactoMineR`, `ade4`, `factoextra` et `explor` pour l’analyse factorielle ;
+- `ggeffects` pour communiquer les modèles ;
+- des exercices sur les pratiques, les revenus, les données éducatives et les pondérations.
+
+Ces éléments sont réutilisés dans une progression explicite.
+
+# Ce qui change
+
+## 1. Une seule progression
+
+Avant : scripts organisés par semestre et séance, avec plusieurs variantes proches.
+
+Maintenant : une progression unique par compétences.
+
+## 2. Moins de packages au départ
+
+Les packages sont introduits quand ils deviennent nécessaires. Cela réduit la charge cognitive et les problèmes d’installation.
+
+## 3. Plus de contrôles
+
+Chaque recodage est suivi d’un tableau de vérification.
+
+## 4. Les valeurs manquantes deviennent un sujet
+
+On ne commence plus par `na.omit()` sur tout le fichier. On documente la perte d’observations et on distingue plusieurs stratégies.
+
+## 5. Les modèles sont enseignés comme des objets d’interprétation
+
+Les références, OR, IC95 %, probabilités prédites et interactions sont explicités.
+
+## 6. L’ACM est recentrée
+
+La lecture s’appuie sur valeurs propres, contributions, modalités actives et illustratives. Les outils visuels ne remplacent pas le raisonnement.
+
+## 7. ACP et CAH deviennent des annexes
+
+Elles sont intéressantes, mais secondaires par rapport au cœur du module consacré à l’analyse des données d’enquête qualitatives et aux modèles binaires.
+
+# À faire après validation pédagogique
+
+Une fois le nouveau cours testé avec une promotion :
+
+1. déplacer l’ancien dossier `Cours M2` vers une archive ;
+2. conserver uniquement les jeux de données encore utilisés ;
+3. supprimer les scripts dupliqués ;
+4. ajouter les résultats rendus des chapitres Quarto ;
+5. figer une version annuelle du cours avec un tag Git.

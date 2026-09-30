@@ -1,0 +1,51 @@
+---
+title: "Bienvenue"
+---
+
+# Ce que vous allez apprendre
+
+Ce cours vous accompagne dans un **workflow complet d’analyse de données d’enquête**. La priorité est donnée au raisonnement sociologique : comprendre ce que représente une variable, faire des choix de préparation explicites, produire des résultats reproductibles et savoir les interpréter.
+
+## Le fil conducteur
+
+À chaque nouvelle analyse, posez-vous sept questions :
+
+1. **Quelle est ma question ?**
+2. **Quelle est mon unité d’analyse ?**
+3. **Quelles variables répondent réellement à la question ?**
+4. **Comment sont codées les valeurs manquantes et les modalités spéciales ?**
+5. **Quel descriptif ou modèle est adapté au type des variables ?**
+6. **Que disent les résultats, avec quelle incertitude ?**
+7. **Quelle conclusion est utile pour un diagnostic, une évaluation ou un conseil ?**
+
+## Progression
+
+| Séance | Compétence principale | Production attendue |
+|---|---|---|
+| 1 | Prendre en main un fichier d’enquête | diagnostic de données |
+| 2 | Nettoyer, recoder et documenter | jeu d’analyse propre |
+| 3 | Décrire et tester | tableau de résultats commenté |
+| 4 | Régression logistique | modèle + OR + probabilités |
+| 5 | ACM | carte factorielle interprétée |
+| 6 | Pondérations | descriptifs pondérés |
+| 7 | Restitution | note d’analyse reproductible |
+
+## Règle d’or
+
+> Un script correct n’est pas seulement un script qui “tourne”. C’est un script que l’on peut relire, justifier, modifier et transmettre.
+
+## Convention de code
+
+Nous utilisons principalement le pipe natif `|>` et le `tidyverse`. Les objets ont des noms explicites : `df_brut`, `df_analyse`, `modele_1`, `acm_1`.
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(gtsummary)
+library(questionr)
+
+data(hdv2003)
+df_brut <- hdv2003
+```
+
+Le code du cours privilégie les fonctions stables et lisibles. Les opérations complexes sont décomposées en étapes plutôt que condensées en une seule commande.

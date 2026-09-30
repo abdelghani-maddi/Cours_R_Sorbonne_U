@@ -1,0 +1,116 @@
+---
+title: "4 — Régression logistique"
+---
+
+# Pourquoi une régression logistique ?
+
+On l’utilise lorsque la variable à expliquer est binaire : pratiquer/ne pas pratiquer, satisfait/non satisfait, fumeur/non-fumeur, etc.
+
+# 1. Vérifier la variable dépendante
+
+```{r}
+#| eval: false
+table(df$smoker, useNA = "ifany")
+levels(df$smoker)
+```
+
+Avec une variable facteur à deux modalités, vérifiez toujours quelle modalité est modélisée. Pour éviter l’ambiguïté, on peut aussi créer explicitement un indicateur 0/1.
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(smoker01 = if_else(smoker == "Fumeur", 1L, 0L))
+```
+
+# 2. Le modèle
+
+```{r}
+#| eval: false
+modele_1 <- glm(
+  smoker01 ~ sexe + age_cat + active,
+  data = df,
+  family = binomial(link = "logit")
+)
+```
+
+Le modèle estime le **logarithme des cotes**. Les coefficients bruts sont donc en log-odds, peu intuitifs pour un public non spécialiste.
+
+# 3. Passer aux odds ratios
+
+```{r}
+#| eval: false
+modele_1 |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  bold_labels()
+```
+
+## Lire un OR
+
+- OR = 1 : même cote que la référence ;
+- OR > 1 : cote plus élevée ;
+- OR < 1 : cote plus faible.
+
+Un OR de 1,5 ne signifie **pas** “50 % de probabilité en plus”. Il signifie que les **cotes** sont multipliées par 1,5, toutes choses égales par ailleurs.
+
+# 4. Traduire en probabilités prédites
+
+Pour une restitution professionnelle, les probabilités sont souvent plus faciles à comprendre.
+
+```{r}
+#| eval: false
+ggeffects::predict_response(
+  modele_1,
+  terms = c("age_cat", "sexe")
+) |>
+  plot()
+```
+
+# 5. Interactions
+
+```{r}
+#| eval: false
+modele_2 <- glm(
+  smoker01 ~ sexe * age_cat + active,
+  data = df,
+  family = binomial()
+)
+
+anova(modele_1, modele_2, test = "Chisq")
+```
+
+Une interaction répond à une question : **l’association entre X et Y varie-t-elle selon Z ?**
+
+N’interprétez pas isolément un coefficient d’interaction complexe. Représentez les probabilités prédites :
+
+```{r}
+#| eval: false
+ggeffects::predict_response(
+  modele_2,
+  terms = c("age_cat", "sexe")
+) |>
+  plot()
+```
+
+# 6. Ce qu’un modèle ne prouve pas
+
+Une association ajustée n’est pas automatiquement causale. Le modèle dépend :
+
+- des variables mesurées ;
+- de leur codage ;
+- des observations conservées ;
+- des catégories de référence ;
+- de la spécification choisie ;
+- du plan d’échantillonnage.
+
+# Checklist avant de commenter
+
+- La variable dépendante est-elle bien codée ?
+- Les références sont-elles explicites ?
+- Les effectifs de chaque modalité sont-ils suffisants ?
+- Les données manquantes sont-elles documentées ?
+- L’OR est-il accompagné de son IC95 % ?
+- Une probabilité prédite serait-elle plus claire ?
+- L’interprétation respecte-t-elle le caractère associatif du modèle ?
