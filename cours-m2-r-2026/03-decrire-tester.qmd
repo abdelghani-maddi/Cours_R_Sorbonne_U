@@ -2,17 +2,43 @@
 title: "3 — Décrire, comparer et tester"
 ---
 
-# 1. Décrire avant de modéliser
+# Objectifs de la séance
 
-Une régression ne remplace jamais un descriptif. Avant un modèle, il faut connaître :
+À la fin de ce chapitre, vous saurez :
 
-- la taille de l’échantillon ;
-- la distribution de la variable étudiée ;
-- la distribution des variables explicatives ;
-- les valeurs manquantes ;
-- les associations bivariées les plus importantes.
+- choisir une statistique descriptive adaptée au type de variable ;
+- calculer effectifs, proportions, moyenne, médiane, dispersion ;
+- produire des tableaux croisés lisibles ;
+- comprendre la différence entre pourcentages en ligne et en colonne ;
+- construire des tableaux avec `gtsummary` ;
+- utiliser `add_p()` sans réduire l’analyse à la p-value ;
+- réaliser et commenter un test du χ² ;
+- repérer les limites liées aux petits effectifs ;
+- produire des graphiques simples utiles à l’interprétation ;
+- rédiger un commentaire sociologique structuré.
 
-# 2. Une variable quantitative
+# 1. Décrire avant de tester
+
+Une analyse descriptive répond à des questions simples mais indispensables :
+
+- qui compose l’échantillon ?
+- quelles pratiques sont fréquentes ?
+- quelles catégories sont minoritaires ?
+- quelles différences apparaissent entre groupes ?
+- ces écarts sont-ils faibles, modérés ou importants ?
+
+Une régression ne remplace jamais ces informations.
+
+# 2. Décrire une variable quantitative
+
+Prenons l’âge.
+
+```{r}
+#| eval: false
+summary(df$age)
+```
+
+Puis :
 
 ```{r}
 #| eval: false
@@ -22,30 +48,117 @@ df |>
     moyenne = mean(age, na.rm = TRUE),
     ecart_type = sd(age, na.rm = TRUE),
     mediane = median(age, na.rm = TRUE),
-    q1 = quantile(age, .25, na.rm = TRUE),
-    q3 = quantile(age, .75, na.rm = TRUE)
+    q1 = quantile(age, 0.25, na.rm = TRUE),
+    q3 = quantile(age, 0.75, na.rm = TRUE),
+    minimum = min(age, na.rm = TRUE),
+    maximum = max(age, na.rm = TRUE)
   )
 ```
 
-La moyenne et l’écart-type sont utiles pour une distribution relativement régulière ; la médiane et l’intervalle interquartile sont souvent plus robustes.
+## Moyenne ou médiane ?
 
-# 3. Une variable qualitative
+La **moyenne** résume bien une distribution relativement symétrique.
+
+La **médiane** est plus robuste aux valeurs extrêmes et aux distributions asymétriques.
+
+Le bon réflexe est de regarder aussi la distribution.
 
 ```{r}
 #| eval: false
-df |>
-  count(sexe) |>
-  mutate(pct = 100 * n / sum(n))
+ggplot(df, aes(x = age)) +
+  geom_histogram(bins = 30) +
+  labs(
+    x = "Âge",
+    y = "Effectif",
+    title = "Distribution de l’âge"
+  ) +
+  theme_minimal()
 ```
 
-Toujours demander : **quel dénominateur produit ce pourcentage ?**
+# 3. Décrire une variable qualitative
 
-# 4. Tableau descriptif avec gtsummary
+```{r}
+#| eval: false
+table(df$sexe, useNA = "ifany")
+```
+
+Proportions :
+
+```{r}
+#| eval: false
+prop.table(
+  table(df$sexe, useNA = "ifany")
+) * 100
+```
+
+Avec `dplyr` :
 
 ```{r}
 #| eval: false
 df |>
-  select(age, sexe, age_cat, occup_cat, sport) |>
+  count(sexe, .drop = FALSE) |>
+  mutate(
+    pct = 100 * n / sum(n)
+  )
+```
+
+# 4. Le dénominateur : question centrale des pourcentages
+
+Un pourcentage n’a de sens que si l’on sait “sur combien”.
+
+Supposons un tableau sexe × sport.
+
+```{r}
+#| eval: false
+tab <- table(df$sexe, df$sport)
+tab
+```
+
+Pourcentage par ligne :
+
+```{r}
+#| eval: false
+prop.table(tab, margin = 1) * 100
+```
+
+La question devient :
+
+> “Au sein de chaque sexe, quelle proportion pratique le sport ?”
+
+Pourcentage par colonne :
+
+```{r}
+#| eval: false
+prop.table(tab, margin = 2) * 100
+```
+
+La question devient :
+
+> “Parmi les pratiquants ou non-pratiquants, quelle est la composition par sexe ?”
+
+Ce ne sont pas les mêmes questions.
+
+::: callout-important
+Avant de commenter un tableau croisé, formulez en français la question correspondant au dénominateur.
+:::
+
+# 5. Créer un tableau descriptif simple
+
+Avec `gtsummary` :
+
+```{r}
+#| eval: false
+library(gtsummary)
+
+df |>
+  select(
+    age,
+    age_cat,
+    sexe,
+    etudes_cat,
+    occup_cat,
+    sport
+  ) |>
   tbl_summary(
     statistic = list(
       all_continuous() ~ "{mean} ({sd})",
@@ -56,57 +169,535 @@ df |>
   bold_labels()
 ```
 
-# 5. Comparer deux groupes
+# 6. Choisir la statistique affichée
+
+Pour une variable quantitative :
 
 ```{r}
 #| eval: false
 df |>
-  select(sport, age_cat, sexe, occup_cat) |>
+  select(age) |>
+  tbl_summary(
+    statistic = age ~ "{median} [{p25}; {p75}]"
+  )
+```
+
+On peut donc adapter le tableau au type de distribution.
+
+# 7. Comparer les groupes
+
+Supposons que nous voulions comparer les profils selon la pratique du sport.
+
+```{r}
+#| eval: false
+df |>
+  select(
+    sport,
+    age,
+    age_cat,
+    sexe,
+    etudes_cat,
+    occup_cat
+  ) |>
   tbl_summary(
     by = sport,
-    statistic = all_categorical() ~ "{n} ({p}%)",
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
     percent = "column",
+    missing = "ifany"
+  )
+```
+
+# 8. Ajouter les tests
+
+```{r}
+#| eval: false
+df |>
+  select(
+    sport,
+    age,
+    age_cat,
+    sexe,
+    etudes_cat,
+    occup_cat
+  ) |>
+  tbl_summary(
+    by = sport,
     missing = "ifany"
   ) |>
   add_p()
 ```
 
-## Lire une p-value
+## Ce que fait add_p()
 
-La p-value ne mesure ni l’importance sociale d’une différence ni sa taille. Elle indique dans quelle mesure les données sont compatibles avec une hypothèse nulle, sous les conditions du test.
+`add_p()` choisit un test adapté selon les variables et les paramètres du tableau.
 
-On ne rédige pas : “la variable X a un effet parce que p < 0,05”.
+Mais l’étudiant doit toujours savoir ce qu’il cherche à tester.
 
-On peut rédiger : “la distribution de X diffère entre les deux groupes dans cet échantillon (test du χ², p < 0,05). La taille et le sens de cette différence doivent être lus dans les pourcentages.”
+La p-value ne remplace pas la lecture des proportions.
 
-# 6. Tableau croisé et χ²
+# 9. Comment lire un tableau descriptif stratifié
+
+Une lecture efficace suit cet ordre :
+
+1. regarder les effectifs des groupes ;
+2. identifier les écarts les plus visibles ;
+3. quantifier l’écart ;
+4. examiner la p-value ;
+5. proposer une interprétation sociologique ;
+6. signaler les limites.
+
+Exemple de structure :
+
+> “La pratique du sport est plus fréquente parmi les individus de la catégorie X que parmi ceux de la catégorie Y. L’écart est de X points de pourcentage. Le test suggère que les distributions diffèrent entre groupes (p = ...). Cet écart peut être rapproché de ..., mais il s’agit d’une association descriptive.”
+
+# 10. Le test du χ²
+
+Le test du χ² examine l’association entre deux variables qualitatives.
+
+Exemple :
 
 ```{r}
 #| eval: false
-tab <- table(df$sport, df$age_cat)
+tab_age_sport <- table(
+  df$age_cat,
+  df$sport
+)
+
+tab_age_sport
+```
+
+Pourcentages par ligne :
+
+```{r}
+#| eval: false
+prop.table(
+  tab_age_sport,
+  margin = 1
+) * 100
+```
+
+Test :
+
+```{r}
+#| eval: false
+test_age_sport <- chisq.test(tab_age_sport)
+test_age_sport
+```
+
+# 11. Hypothèse nulle
+
+Pour le χ² :
+
+**H0 :** les deux variables sont indépendantes.
+
+**H1 :** il existe une association entre les deux variables.
+
+Si la p-value est faible au regard du seuil choisi, on considère que les données sont peu compatibles avec H0.
+
+On ne dit pas :
+
+> “L’âge cause la pratique sportive.”
+
+On dit :
+
+> “La pratique sportive est associée à la tranche d’âge dans les données observées.”
+
+# 12. Vérifier les effectifs attendus
+
+```{r}
+#| eval: false
+test_age_sport$expected
+```
+
+Si plusieurs effectifs attendus sont très faibles, l’approximation du χ² peut être fragile.
+
+On peut alors :
+
+- regrouper certaines modalités si cela a un sens ;
+- envisager un test exact dans certains cas ;
+- surtout ne pas ignorer le problème.
+
+# 13. Résidus standardisés : où se situe l’association ?
+
+Le χ² global indique qu’il existe ou non une association, mais pas directement quelles cases contribuent le plus.
+
+```{r}
+#| eval: false
+test_age_sport$stdres
+```
+
+Lecture simple :
+
+- résidu positif important : plus d’observations qu’attendu sous l’indépendance ;
+- résidu négatif important : moins qu’attendu.
+
+Il s’agit d’un outil de diagnostic, pas d’une nouvelle p-value à surinterpréter.
+
+# 14. Visualiser un tableau croisé
+
+Une représentation proportionnelle :
+
+```{r}
+#| eval: false
+df |>
+  filter(
+    !is.na(age_cat),
+    !is.na(sport)
+  ) |>
+  ggplot(
+    aes(
+      x = age_cat,
+      fill = sport
+    )
+  ) +
+  geom_bar(
+    position = "fill"
+  ) +
+  labs(
+    x = "Tranche d’âge",
+    y = "Proportion",
+    fill = "Sport",
+    title = "Pratique du sport selon l’âge"
+  ) +
+  theme_minimal()
+```
+
+La hauteur totale vaut 100 % pour chaque tranche d’âge.
+
+# 15. Comparer une quantitative selon un groupe
+
+Pour comparer l’âge entre pratiquants et non-pratiquants :
+
+```{r}
+#| eval: false
+df |>
+  group_by(sport) |>
+  summarise(
+    n = sum(!is.na(age)),
+    age_moyen = mean(age, na.rm = TRUE),
+    age_median = median(age, na.rm = TRUE),
+    ecart_type = sd(age, na.rm = TRUE)
+  )
+```
+
+Graphiquement :
+
+```{r}
+#| eval: false
+ggplot(
+  df,
+  aes(
+    x = sport,
+    y = age
+  )
+) +
+  geom_boxplot() +
+  labs(
+    x = "Pratique du sport",
+    y = "Âge"
+  ) +
+  theme_minimal()
+```
+
+# 16. Significativité statistique et importance sociologique
+
+Avec un très grand échantillon, une différence minuscule peut avoir une p-value faible.
+
+Avec un petit échantillon, une différence substantielle peut être très incertaine.
+
+Il faut donc distinguer :
+
+- **existence statistique d’une association** ;
+- **ampleur de l’écart** ;
+- **incertitude** ;
+- **intérêt sociologique ou professionnel**.
+
+::: callout-tip
+Commencez toujours votre commentaire par les chiffres substantiels, pas par la p-value.
+:::
+
+# 17. Atelier guidé — décrire la pratique de la cuisine
+
+## Étape 1 — jeu d’analyse
+
+Construisez un jeu contenant :
+
+- `cuisine`
+- `sexe`
+- `age_cat`
+- `etudes_cat`
+- `occup_cat`
+- `tv_cat`
+- `sport`
+- `bricol`
+
+Supprimez uniquement les lignes incomplètes pour ces variables.
+
+## Étape 2 — descriptif global
+
+Produisez un `tbl_summary()`.
+
+Questions :
+
+1. Quelle est la catégorie d’âge la plus fréquente ?
+2. Quelle est la distribution de la pratique de la cuisine ?
+3. Quel est le profil de l’échantillon du point de vue des études ?
+
+## Étape 3 — tableau par cuisine
+
+Produisez :
+
+```{r}
+#| eval: false
+tbl_summary(
+  data = df_cuisine,
+  by = cuisine
+)
+```
+
+puis ajoutez `add_p()`.
+
+## Étape 4 — sélectionner deux résultats
+
+Choisissez deux variables présentant des écarts intéressants.
+
+Pour chacune, rédigez trois phrases :
+
+1. description du contraste ;
+2. information statistique ;
+3. interprétation sociologique prudente.
+
+# 18. Atelier pratique — construire les pourcentages soi-même
+
+Sans `gtsummary`, calculez la distribution de `sport` selon `age_cat`.
+
+Une solution possible :
+
+```{r}
+#| eval: false
+df |>
+  filter(
+    !is.na(age_cat),
+    !is.na(sport)
+  ) |>
+  count(
+    age_cat,
+    sport
+  ) |>
+  group_by(age_cat) |>
+  mutate(
+    pct = 100 * n / sum(n)
+  )
+```
+
+Questions :
+
+1. Quel est le dénominateur ?
+2. Comment modifier le code pour calculer la composition par âge à l’intérieur de chaque modalité de sport ?
+
+# 19. Atelier pratique — de table() à un commentaire
+
+```{r}
+#| eval: false
+tab <- table(
+  df$sexe,
+  df$cuisine
+)
+
+tab
 prop.table(tab, margin = 1) * 100
 chisq.test(tab)
 ```
 
-**H0 :** les deux variables sont indépendantes dans la population étudiée.
+Rédigez un commentaire de 5 lignes maximum qui contient :
 
-Avant d’interpréter le test, inspectez les effectifs attendus :
+- le sens de l’écart ;
+- son ordre de grandeur ;
+- le résultat du test ;
+- une interprétation possible ;
+- une limite.
+
+# 20. Exercice “quelle statistique choisir ?”
+
+Pour chaque variable, choisissez la description la plus pertinente.
+
+## Âge
+
+- effectifs et pourcentages ?
+- moyenne et écart-type ?
+- médiane et quartiles ?
+
+## Sexe
+
+- moyenne ?
+- effectifs et pourcentages ?
+
+## Nombre d’heures de télévision
+
+- uniquement la moyenne ?
+- histogramme + moyenne/médiane ?
+- tableau de fréquences si la variable prend peu de valeurs ?
+
+## Niveau d’études
+
+- moyenne du numéro de modalité ?
+- effectifs et pourcentages ?
+
+L’objectif est de relier le choix statistique à la nature de la variable.
+
+# 21. Exercice “ligne ou colonne ?”
+
+On étudie la pratique du cinéma selon le sexe.
+
+### Question A
+
+> “Parmi les femmes, quelle proportion va au cinéma ?”
+
+Il faut des pourcentages **en ligne** si le sexe est placé en ligne.
+
+### Question B
+
+> “Parmi les personnes allant au cinéma, quelle part sont des femmes ?”
+
+Il faut des pourcentages **en colonne** dans cette disposition.
+
+Écrivez les deux commandes avec `prop.table()`.
+
+# 22. Exercice “ne pas tomber amoureux de p < 0,05”
+
+Supposons :
+
+- groupe A : 51 % ;
+- groupe B : 49 % ;
+- p = 0,02.
+
+Puis :
+
+- groupe C : 65 % ;
+- groupe D : 45 % ;
+- p = 0,08.
+
+Questions :
+
+1. Quel contraste est le plus grand ?
+2. Lequel est statistiquement significatif au seuil de 5 % ?
+3. Pourquoi ces deux réponses peuvent-elles être différentes ?
+4. Lequel serait potentiellement le plus intéressant pour un commanditaire ?
+5. Quelle information supplémentaire voudriez-vous connaître ?
+
+# 23. Présenter un tableau professionnel
+
+Un tableau utile doit :
+
+- avoir un titre informatif ;
+- indiquer les effectifs ;
+- utiliser des libellés compréhensibles ;
+- afficher un nombre raisonnable de décimales ;
+- préciser le traitement des valeurs manquantes ;
+- permettre de retrouver le dénominateur des pourcentages.
+
+Avec `gtsummary` :
 
 ```{r}
 #| eval: false
-test <- chisq.test(tab)
-test$expected
+df |>
+  select(
+    sport,
+    age_cat,
+    sexe,
+    etudes_cat
+  ) |>
+  tbl_summary(
+    by = sport,
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    missing = "no"
+  ) |>
+  add_overall(last = TRUE) |>
+  add_p() |>
+  modify_caption(
+    "**Caractéristiques des répondants selon la pratique sportive**"
+  ) |>
+  bold_labels()
 ```
 
-Si plusieurs cases ont de très faibles effectifs attendus, le χ² peut être inadapté.
+# 24. Comment rédiger une interprétation
 
-# 7. Écrire une interprétation utile
+Une bonne phrase comporte quatre niveaux.
 
-Une bonne interprétation suit quatre étapes :
+## 1. Le fait
 
-1. décrire le contraste principal ;
-2. donner un ordre de grandeur ;
-3. indiquer l’incertitude ou le test ;
-4. proposer une lecture sociologique prudente.
+> “La proportion de pratiquants est plus élevée chez …”
 
-Exemple de forme : “La pratique est plus fréquente dans le groupe A que dans le groupe B. L’écart observé est de … points. Le test d’indépendance indique … . Cette différence peut être rapprochée de …, sans permettre à elle seule d’établir un mécanisme causal.”
+## 2. L’ampleur
+
+> “… avec X % contre Y %, soit un écart de Z points.”
+
+## 3. L’incertitude
+
+> “Le test d’indépendance donne …”
+
+## 4. La lecture sociologique
+
+> “Cet écart peut être mis en relation avec …”
+
+Puis une réserve :
+
+> “Cette analyse bivariée ne permet cependant pas de distinguer ce qui relève de l’âge, du niveau d’études ou de la position professionnelle.”
+
+# 25. Erreurs fréquentes
+
+## Lire uniquement la p-value
+
+Une p-value ne décrit pas l’écart.
+
+## Confondre pourcentages en ligne et en colonne
+
+Cela change la question posée.
+
+## Commenter une moyenne sans voir la distribution
+
+La moyenne seule peut masquer une forte asymétrie.
+
+## Écrire “il n’y a pas de différence” parce que p > 0,05
+
+Il est plus prudent de dire que l’on ne dispose pas d’un signal statistique suffisamment précis pour rejeter l’indépendance au seuil choisi.
+
+## Tester toutes les variables sans question
+
+Une sortie automatique n’est pas encore une analyse.
+
+# 26. Travail autonome — mini-analyse descriptive complète
+
+À partir de `hdv2003`, choisissez une pratique parmi :
+
+- `sport`
+- `cuisine`
+- `bricol`
+- `cinema`
+
+Puis :
+
+1. définissez une question de comparaison ;
+2. préparez quatre variables explicatives ;
+3. produisez un tableau descriptif global ;
+4. produisez un tableau par pratique ;
+5. choisissez un tableau croisé ;
+6. réalisez un χ² ;
+7. produisez un graphique ;
+8. rédigez un commentaire de 10 lignes maximum.
+
+# 27. Ce qu’il faut retenir
+
+Une description solide distingue toujours :
+
+- les **effectifs** ;
+- les **proportions** ;
+- les **dénominateurs** ;
+- l’**ampleur des écarts** ;
+- l’**incertitude** ;
+- l’**interprétation sociologique**.
+
+Le test statistique vient compléter la description. Il ne la remplace jamais.
