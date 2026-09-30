@@ -1,0 +1,163 @@
+---
+title: "Corrigé 4 — Satisfaction résidentielle et fréquences"
+---
+
+# 1. Comprendre l’unité d’analyse
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(MASS)
+library(gtsummary)
+library(survey)
+library(FactoMineR)
+library(factoextra)
+
+data(housing, package = "MASS")
+df <- housing
+
+nrow(df)
+sum(df$Freq)
+head(df)
+```
+
+**Point essentiel.** `nrow(df)` compte des combinaisons de modalités. `sum(Freq)` compte les habitants représentés. Ignorer `Freq` donnerait le même poids à un profil rare et à un profil fréquent.
+
+# 2. Distributions pondérées
+
+```{r}
+#| eval: false
+dist_sat <- df |>
+  group_by(Sat) |>
+  summarise(n = sum(Freq), .groups = "drop") |>
+  mutate(pct = 100 * n / sum(n))
+
+dist_type <- df |>
+  group_by(Type) |>
+  summarise(n = sum(Freq), .groups = "drop") |>
+  mutate(pct = 100 * n / sum(n))
+
+dist_sat
+dist_type
+```
+
+# 3. Tableau croisé pondéré
+
+```{r}
+#| eval: false
+tab <- xtabs(Freq ~ Sat + Type, data = df)
+tab
+prop.table(tab, margin = 2) * 100
+```
+
+Ici, les pourcentages par colonne répondent à : **au sein de chaque type de bâtiment, comment se répartit la satisfaction ?**
+
+# 4. χ²
+
+```{r}
+#| eval: false
+test <- chisq.test(tab)
+test
+test$expected
+```
+
+**H0 :** satisfaction et type de bâtiment sont indépendants dans la population représentée par ces fréquences.
+
+# 5. Satisfaction élevée
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    SatHigh = if_else(Sat == "High", 1L, 0L)
+  )
+
+table(df$Sat, df$SatHigh)
+```
+
+# 6. Modèle avec poids de fréquence
+
+```{r}
+#| eval: false
+modele <- glm(
+  SatHigh ~ Infl + Type + Cont,
+  data = df,
+  weights = Freq,
+  family = binomial()
+)
+
+modele |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  add_global_p()
+```
+
+## Attention méthodologique
+
+`weights = Freq` reproduit ici le fait que chaque ligne représente plusieurs cas identiques. Il ne faut pas généraliser ce code à tous les plans d’enquête.
+
+# 7. Objet survey
+
+```{r}
+#| eval: false
+design <- svydesign(
+  ids = ~1,
+  weights = ~Freq,
+  data = df
+)
+
+design |>
+  tbl_svysummary(
+    include = c(Sat, Infl, Type, Cont)
+  )
+```
+
+# 8. Comparer naïf et pondéré
+
+```{r}
+#| eval: false
+naif <- df |>
+  count(Type) |>
+  mutate(pct = 100 * n / sum(n))
+
+pondere <- df |>
+  group_by(Type) |>
+  summarise(n = sum(Freq), .groups = "drop") |>
+  mutate(pct = 100 * n / sum(n))
+
+naif
+pondere
+```
+
+La comparaison constitue ici un excellent exercice de compréhension : le premier tableau décrit les **lignes**, le second les **habitants représentés**.
+
+# 9. ACM pondérée
+
+La manière la plus transparente pédagogiquement est d’expanser les lignes, car l’effectif total reste gérable :
+
+```{r}
+#| eval: false
+df_expand <- df |>
+  tidyr::uncount(weights = Freq)
+
+df_acm <- df_expand |>
+  select(Sat, Infl, Type, Cont) |>
+  mutate(across(everything(), as.factor))
+
+acm <- FactoMineR::MCA(df_acm, graph = FALSE)
+
+acm$eig
+factoextra::fviz_mca_var(acm, repel = TRUE)
+factoextra::fviz_contrib(acm, choice = "var", axes = 1)
+factoextra::fviz_contrib(acm, choice = "var", axes = 2)
+```
+
+::: callout-note
+L’expansion est utilisée ici pour rendre la logique visible. Sur des données volumineuses, on privilégie une méthode qui gère directement les poids ou un outil adapté au plan d’enquête.
+:::
+
+# 10. Réponse finale
+
+Ignorer `Freq` est une erreur d’unité d’analyse parce que les lignes ne sont pas des individus interchangeables. Le fichier est agrégé : une ligne encode une configuration et son effectif. Toute statistique visant les habitants doit donc restituer cette multiplicité.
