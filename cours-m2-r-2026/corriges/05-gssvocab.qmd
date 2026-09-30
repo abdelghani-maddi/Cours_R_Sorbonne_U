@@ -48,7 +48,7 @@ df <- df |>
 table(df$vocab_high, useNA = "ifany")
 ```
 
-## Pourquoi les groupes ne sont-ils pas nécessairement 50/50 ?
+## Effet de la médiane sur la taille des groupes
 
 Si beaucoup d’individus ont exactement le score médian, la règle `>= médiane` les place tous dans le groupe “élevé”. Une médiane ne garantit donc pas deux groupes d’effectif égal.
 
