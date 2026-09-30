@@ -55,7 +55,7 @@ table(df$Exer, df$active, useNA = "ifany")
 table(df$Age, df$age_cat, useNA = "ifany")
 ```
 
-**Pourquoi regrouper les fumeurs ?** L’exercice transforme quatre modalités de tabagisme en une opposition binaire afin d’utiliser une régression logistique simple. On perd de l’information sur l’intensité ; cette perte doit être mentionnée.
+**Justification du regroupement.** L’exercice transforme quatre modalités de tabagisme en une opposition binaire afin d’utiliser une régression logistique simple. On perd de l’information sur l’intensité ; cette perte doit être mentionnée.
 
 # 3. Descriptif
 
