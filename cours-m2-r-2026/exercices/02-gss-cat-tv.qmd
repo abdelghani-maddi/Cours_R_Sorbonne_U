@@ -26,6 +26,6 @@ Quels profils sociodémographiques sont associés au fait de regarder **au moins
 12. Réaliser une ACM sur `marital`, `relig`, `race`, `rincome_rec`, `partyid`, avec `age_cat` et `tv_high` illustratives.
 13. Nommer les deux premiers axes à partir des modalités qui contribuent réellement à leur construction.
 
-# Question finale
+# Synthèse
 
 Les analyses descriptive, multivariée et factorielle racontent-elles la même histoire ? Distinguez ce qui est robuste de ce qui dépend du codage ou de la méthode.
