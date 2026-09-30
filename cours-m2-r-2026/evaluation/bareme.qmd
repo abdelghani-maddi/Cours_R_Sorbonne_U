@@ -1,0 +1,43 @@
+---
+title: "Grille de correction"
+---
+
+# Philosophie
+
+La correction évalue un **raisonnement d’analyse**, pas la mémorisation d’une syntaxe.
+
+# Grille
+
+| Critère | Insuffisant | Satisfaisant | Très bon |
+|---|---|---|---|
+| Reproductibilité | code fragmenté, objets implicites | script exécutable | script clair, structuré, contrôlé |
+| Diagnostic | peu ou pas de contrôle | types et NA examinés | unité d’analyse, modalités et NA discutés |
+| Recodage | arbitraire / non vérifié | cohérent | justifié sociologiquement + contrôle |
+| Descriptif | chiffres isolés | tableau correct | dénominateurs et écarts explicités |
+| Tests | p-value seule | test correctement nommé | hypothèse, conditions et ampleur distinguées |
+| Logit | coefficients mal lus | OR correctement interprétés | référence, IC95 %, ajustement et limites |
+| Interaction | coefficient récité | comparaison de modèles | probabilités prédites et interprétation claire |
+| ACM | commentaire visuel | axes décrits | contributions + modalités + prudence |
+| Sociologie | paraphrase de chiffres | interprétation plausible | articulation résultat / mécanisme / limite |
+| Restitution | longue ou confuse | structurée | concise, hiérarchisée, utile à la décision |
+
+# Erreurs à pénaliser fortement
+
+- modifier ou écraser le fichier brut sans nécessité ;
+- recoder sans vérifier les modalités initiales ;
+- traiter les valeurs manquantes comme une catégorie substantielle sans justification ;
+- écrire “X cause Y” à partir d’une régression transversale ;
+- interpréter un OR comme un pourcentage de probabilité ;
+- interpréter une ACM uniquement à partir de la distance visuelle, sans contributions ;
+- ignorer les poids lorsque l’unité du fichier l’exige.
+
+# Crédit partiel
+
+Une syntaxe imparfaite peut recevoir une part importante des points si :
+
+- la logique est correcte ;
+- l’étudiant identifie l’erreur ;
+- les choix méthodologiques sont explicités ;
+- l’interprétation qui suit reste cohérente avec ce qui aurait dû être calculé.
+
+À l’inverse, une sortie obtenue par hasard sans compréhension ne reçoit pas l’intégralité des points.
