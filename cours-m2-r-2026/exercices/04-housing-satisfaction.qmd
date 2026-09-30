@@ -1,0 +1,24 @@
+---
+title: "Exercice 4 — Satisfaction résidentielle et fréquences"
+---
+
+# Contexte
+
+Le jeu `MASS::housing` décrit des profils résidentiels à Copenhague. Une ligne ne représente pas une personne : `Freq` donne le nombre d’habitants correspondant à chaque combinaison de `Sat`, `Infl`, `Type` et `Cont`.
+
+# Travail
+
+1. Comparer `nrow(housing)` et `sum(housing$Freq)`. Expliquer la différence.
+2. Calculer la distribution pondérée de `Sat` puis de `Type`.
+3. Construire un tableau croisé pondéré `Sat × Type` avec `xtabs()`.
+4. Tester l’indépendance entre `Sat` et `Type`.
+5. Créer `SatHigh` : 1 si `Sat == "High"`, 0 sinon.
+6. Estimer une régression logistique pondérée par `Freq` avec `Infl + Type + Cont`.
+7. Présenter les OR.
+8. Construire un objet `survey::svydesign()` avec `Freq` comme poids et produire un descriptif pondéré.
+9. Comparer explicitement un résultat pondéré et un résultat qui ignorerait `Freq`.
+10. Réaliser une ACM sur `Sat`, `Infl`, `Type`, `Cont` en tenant compte des effectifs, par pondération ou expansion raisonnée.
+
+# Question finale
+
+Pourquoi ignorer `Freq` constitue-t-il ici une erreur d’unité d’analyse, et pas simplement un choix de présentation ?
