@@ -2,38 +2,236 @@
 title: "2 — Préparer, nettoyer et recoder"
 ---
 
-# Pourquoi préparer les données ?
+# Objectifs de la séance
 
-Le nettoyage n’est pas une étape “technique” séparée de la sociologie. Recoder une variable revient à décider quelles différences sont pertinentes pour la question étudiée.
+À la fin de ce chapitre, vous saurez :
 
-# 1. Conserver un objet brut
+- sélectionner les variables utiles ;
+- filtrer des observations en comprenant ce que vous excluez ;
+- repérer des doublons et des incohérences simples ;
+- créer des variables dérivées avec `mutate()`, `case_when()` et `cut()` ;
+- regrouper des modalités avec `forcats` ;
+- traiter les valeurs manquantes de façon explicite ;
+- définir et contrôler des catégories de référence ;
+- documenter les transformations ;
+- construire un **jeu d’analyse propre** à partir d’un fichier brut.
+
+# 1. Préparer les données = prendre des décisions
+
+Le nettoyage n’est pas une opération neutre.
+
+Créer une tranche d’âge, regrouper des diplômes ou supprimer des observations modifie la manière dont la population sera décrite.
+
+La bonne question n’est donc pas :
+
+> “Quelle fonction R faut-il utiliser ?”
+
+mais :
+
+> “Quelle transformation répond à ma question sans déformer inutilement l’information ?”
+
+# 2. Le workflow recommandé
+
+Nous allons toujours suivre la même séquence :
+
+1. partir de `df_brut` ;
+2. sélectionner les variables utiles ;
+3. inspecter les distributions ;
+4. repérer les problèmes ;
+5. recoder ;
+6. contrôler chaque recodage ;
+7. décider quoi faire des valeurs manquantes ;
+8. construire `df_analyse` ;
+9. comparer les effectifs avant/après ;
+10. documenter les choix.
+
+# 3. Partir d’un objet brut intact
 
 ```{r}
 #| eval: false
-df_brut <- questionr::hdv2003
+library(tidyverse)
+library(questionr)
+library(labelled)
 
-df_analyse <- df_brut |>
-  select(age, sexe, nivetud, occup, sport, heures.tv)
+data(hdv2003)
+
+df_brut <- hdv2003
 ```
 
-Le fichier brut reste intact. Toutes les transformations se font dans un nouvel objet.
-
-# 2. Examiner avant de recoder
+Nous créons ensuite un objet de travail :
 
 ```{r}
 #| eval: false
-table(df_analyse$occup, useNA = "ifany")
-table(df_analyse$nivetud, useNA = "ifany")
-summary(df_analyse$age)
+df_prepare <- df_brut |>
+  select(
+    id,
+    age,
+    sexe,
+    nivetud,
+    occup,
+    sport,
+    cuisine,
+    bricol,
+    heures.tv
+  )
 ```
 
-La règle est simple : **on ne recode pas une variable que l’on n’a pas inspectée**.
+# 4. Sélectionner n’est pas supprimer “pour toujours”
 
-# 3. Créer des classes d’âge
+`select()` permet de construire un sous-ensemble de colonnes.
 
 ```{r}
 #| eval: false
-df_analyse <- df_analyse |>
+df_prepare |>
+  select(age, sexe, sport)
+```
+
+On peut aussi exclure une variable :
+
+```{r}
+#| eval: false
+df_prepare |>
+  select(-id)
+```
+
+ou sélectionner par motif :
+
+```{r}
+#| eval: false
+df_brut |>
+  select(contains("trav"))
+```
+
+# 5. Renommer lorsque le nom gêne la lecture
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  rename(
+    niveau_etudes = nivetud,
+    heures_tv = heures.tv
+  )
+```
+
+Renommer ne doit pas faire perdre le lien avec le dictionnaire original. Dans un projet réel, gardez une trace des correspondances.
+
+# 6. Filtrer : toujours savoir qui sort de l’analyse
+
+Exemple :
+
+```{r}
+#| eval: false
+df_25_64 <- df_prepare |>
+  filter(age >= 25, age <= 64)
+```
+
+Avant de filtrer :
+
+```{r}
+#| eval: false
+nrow(df_prepare)
+```
+
+Après :
+
+```{r}
+#| eval: false
+nrow(df_25_64)
+```
+
+La différence est une information à documenter.
+
+::: callout-warning
+Un filtre n’est jamais seulement une ligne de code. C’est une définition de la population analysée.
+:::
+
+# 7. Vérifier les doublons
+
+Si `id` est supposé identifier une personne de manière unique :
+
+```{r}
+#| eval: false
+df_prepare |>
+  count(id) |>
+  filter(n > 1)
+```
+
+Si cette sortie est vide, aucun identifiant n’apparaît plusieurs fois.
+
+On peut aussi comparer :
+
+```{r}
+#| eval: false
+nrow(df_prepare)
+n_distinct(df_prepare$id)
+```
+
+Si les deux nombres diffèrent, il faut comprendre pourquoi avant de poursuivre.
+
+# 8. Vérifier les valeurs plausibles
+
+Pour l’âge :
+
+```{r}
+#| eval: false
+summary(df_prepare$age)
+sort(unique(df_prepare$age))
+```
+
+Pour une variable qualitative :
+
+```{r}
+#| eval: false
+table(df_prepare$occup, useNA = "ifany")
+```
+
+On cherche :
+
+- valeurs impossibles ;
+- modalités inattendues ;
+- catégories rares ;
+- valeurs manquantes ;
+- codes spéciaux.
+
+# 9. Créer une variable binaire
+
+Supposons que l’on veuille distinguer les personnes qui pratiquent un sport.
+
+Avant de recoder :
+
+```{r}
+#| eval: false
+table(df_prepare$sport, useNA = "ifany")
+```
+
+Puis :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    sport01 = case_when(
+      sport == "Oui" ~ 1L,
+      sport == "Non" ~ 0L,
+      TRUE ~ NA_integer_
+    )
+  )
+```
+
+Contrôle :
+
+```{r}
+#| eval: false
+table(df_prepare$sport, df_prepare$sport01, useNA = "ifany")
+```
+
+Cette table croisée est plus informative qu’un simple `table(sport01)` car elle vérifie la correspondance entre ancienne et nouvelle variable.
+
+# 10. Créer des classes d’âge avec cut()
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
   mutate(
     age_cat = cut(
       age,
@@ -42,19 +240,121 @@ df_analyse <- df_analyse |>
       labels = c("18–34", "35–54", "55+")
     )
   )
-
-table(df_analyse$age_cat, useNA = "ifany")
 ```
 
-## Pourquoi vérifier après ?
+## Comprendre les bornes
 
-Une faute dans les bornes peut exclure des individus. Le tableau de contrôle est obligatoire.
+Avec `right = FALSE` :
 
-# 4. Regrouper des modalités
+- `[18,35[` signifie 18 inclus et 35 exclu ;
+- 35 appartient donc au groupe suivant ;
+- `Inf` évite de fixer arbitrairement une borne maximale.
+
+Contrôle :
 
 ```{r}
 #| eval: false
-df_analyse <- df_analyse |>
+table(df_prepare$age_cat, useNA = "ifany")
+```
+
+Pour vérifier plus finement les bornes :
+
+```{r}
+#| eval: false
+df_prepare |>
+  filter(age %in% c(18, 34, 35, 54, 55)) |>
+  count(age, age_cat)
+```
+
+# 11. Créer une variable à partir de conditions
+
+Pour la télévision :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    tv_cat = case_when(
+      heures_tv == 0 ~ "0 h",
+      heures_tv >= 1 & heures_tv <= 2 ~ "1–2 h",
+      heures_tv >= 3 ~ "3 h ou plus",
+      TRUE ~ NA_character_
+    )
+  )
+```
+
+Puis :
+
+```{r}
+#| eval: false
+table(df_prepare$heures_tv, df_prepare$tv_cat, useNA = "ifany")
+```
+
+Pourquoi placer `TRUE ~ NA_character_` ?
+
+Parce qu’une valeur qui ne correspond à aucune règle ne doit pas être inventée silencieusement.
+
+# 12. Regrouper les modalités d’un facteur
+
+Inspectons le niveau d’études :
+
+```{r}
+#| eval: false
+levels(df_prepare$niveau_etudes)
+table(df_prepare$niveau_etudes, useNA = "ifany")
+```
+
+Nous pouvons construire une version simplifiée :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    etudes_cat = forcats::fct_collapse(
+      niveau_etudes,
+      "Primaire" = c(
+        "N'a jamais fait d'etudes",
+        "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+        "Derniere annee d'etudes primaires"
+      ),
+      "Secondaire" = c(
+        "1er cycle",
+        "2eme cycle"
+      ),
+      "Supérieur / professionnel" = c(
+        "Enseignement technique ou professionnel court",
+        "Enseignement technique ou professionnel long",
+        "Enseignement superieur y compris technique superieur"
+      )
+    )
+  )
+```
+
+Contrôle :
+
+```{r}
+#| eval: false
+table(
+  df_prepare$niveau_etudes,
+  df_prepare$etudes_cat,
+  useNA = "ifany"
+)
+```
+
+# 13. Recoder une variable d’occupation
+
+Avant :
+
+```{r}
+#| eval: false
+table(df_prepare$occup, useNA = "ifany")
+```
+
+Recodage :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
   mutate(
     occup_cat = case_when(
       occup %in% c("Exerce une profession", "Chomeur") ~ "Actifs",
@@ -62,53 +362,398 @@ df_analyse <- df_analyse |>
       occup %in% c("Retraite", "Retire des affaires", "Autre inactif") ~ "Hors marché du travail",
       TRUE ~ NA_character_
     ),
-    occup_cat = factor(occup_cat)
+    occup_cat = factor(
+      occup_cat,
+      levels = c(
+        "Actifs",
+        "Formation / foyer",
+        "Hors marché du travail"
+      )
+    )
   )
 ```
 
-Les libellés exacts doivent toujours être contrôlés avec `levels()` ou `table()` avant d’écrire le recodage.
-
-# 5. Valeurs manquantes : quatre stratégies
-
-**Conserver comme NA.** Utile lorsque l’on veut que chaque analyse travaille avec les observations disponibles.
-
-**Supprimer pour une analyse donnée.** À faire seulement sur les variables nécessaires à cette analyse.
+Contrôle :
 
 ```{r}
 #| eval: false
-df_reg <- df_analyse |>
-  drop_na(sport, age_cat, sexe, nivetud)
+table(df_prepare$occup, df_prepare$occup_cat, useNA = "ifany")
 ```
 
-**Créer une modalité explicite.** Possible si “non-réponse” est substantivement interprétable ; elle ne doit pas être utilisée automatiquement.
+# 14. Pourquoi les regroupements doivent-ils être justifiés ?
+
+Prenons l’occupation.
+
+Regrouper “chômeur” et “exerce une profession” dans “Actifs” peut être pertinent si la question concerne la position vis-à-vis du marché du travail au sens large.
+
+Mais cela peut être un mauvais choix si l’on étudie précisément les effets du chômage.
+
+Le bon recodage dépend donc de la **question sociologique**.
+
+::: callout-note
+Il n’existe pas toujours un recodage “correct” indépendamment de la problématique. Il existe surtout des recodages plus ou moins cohérents, documentés et défendables.
+:::
+
+# 15. Les valeurs manquantes : ne pas choisir trop vite
+
+Commençons par mesurer les manquants :
 
 ```{r}
 #| eval: false
-x <- forcats::fct_na_value_to_level(x, level = "Non renseigné")
+df_prepare |>
+  summarise(
+    across(
+      c(age, sexe, niveau_etudes, occup, sport, heures_tv),
+      ~ sum(is.na(.x))
+    )
+  )
 ```
 
-**Imputer.** Hors du socle de ce cours ; à mobiliser seulement avec une justification méthodologique adaptée.
+## Stratégie 1 — conserver les NA
 
-# 6. Définir une référence
+C’est souvent le meilleur choix pendant la préparation.
 
-En régression, la catégorie de référence est le point de comparaison.
+On laisse les valeurs manquantes visibles et chaque analyse utilise les observations disponibles.
+
+## Stratégie 2 — supprimer les observations nécessaires à une analyse
 
 ```{r}
 #| eval: false
-df_analyse <- df_analyse |>
-  mutate(sexe = forcats::fct_relevel(sexe, "Femme"))
-
-levels(df_analyse$sexe)
+df_reg <- df_prepare |>
+  drop_na(
+    sport01,
+    age_cat,
+    sexe,
+    etudes_cat
+  )
 ```
 
-# 7. La fiche de traçabilité
+On supprime seulement les observations incomplètes pour les variables nécessaires.
 
-Pour chaque variable recodée, documentez :
+## Stratégie 3 — créer une modalité explicite
 
-| Variable | Transformation | Justification | Contrôle |
-|---|---|---|---|
-| `age` | 3 classes | lisibilité et effectifs suffisants | tableau avant/après |
-| `occup` | 3 groupes | statut vis-à-vis du marché du travail | modalités et NA |
-| `sexe` | référence explicite | interprétation du modèle | `levels()` |
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    etudes_cat_explicit = forcats::fct_na_value_to_level(
+      etudes_cat,
+      level = "Non renseigné"
+    )
+  )
+```
 
-Cette fiche évite les recodages “magiques” dont on oublie la logique.
+Cette stratégie ne convient que si l’on accepte d’analyser la non-réponse comme une catégorie particulière.
+
+## Stratégie 4 — imputation
+
+L’imputation consiste à remplacer des valeurs manquantes selon un modèle ou une procédure définie.
+
+Elle existe, mais elle sort du socle de ce cours. Elle ne doit jamais être réduite à “remplacer les NA par la moyenne”.
+
+# 16. Quantifier la perte liée aux cas complets
+
+```{r}
+#| eval: false
+n_avant <- nrow(df_prepare)
+
+df_complet <- df_prepare |>
+  drop_na(
+    sport,
+    age_cat,
+    sexe,
+    etudes_cat,
+    occup_cat,
+    tv_cat
+  )
+
+n_apres <- nrow(df_complet)
+
+tibble(
+  effectif_initial = n_avant,
+  effectif_final = n_apres,
+  observations_perdues = n_avant - n_apres,
+  pct_perdu = round(
+    100 * (n_avant - n_apres) / n_avant,
+    1
+  )
+)
+```
+
+Une copie d’examen solide présente cet effectif.
+
+# 17. Vérifier si les cas perdus ont un profil particulier
+
+On peut créer un indicateur :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    complet_analyse = if_else(
+      complete.cases(
+        sport,
+        age_cat,
+        sexe,
+        etudes_cat,
+        occup_cat,
+        tv_cat
+      ),
+      "Complet",
+      "Incomplet"
+    )
+  )
+
+table(df_prepare$complet_analyse)
+```
+
+Puis comparer par exemple l’âge :
+
+```{r}
+#| eval: false
+df_prepare |>
+  group_by(complet_analyse) |>
+  summarise(
+    n = n(),
+    age_moyen = mean(age, na.rm = TRUE),
+    age_median = median(age, na.rm = TRUE)
+  )
+```
+
+L’objectif n’est pas de mener ici une analyse avancée des mécanismes de non-réponse, mais de comprendre que les lignes supprimées ne sont pas nécessairement “au hasard”.
+
+# 18. Réordonner les niveaux d’un facteur
+
+Pour une régression, la première modalité du facteur est généralement la référence.
+
+```{r}
+#| eval: false
+levels(df_prepare$sexe)
+```
+
+Si l’on souhaite prendre `Femme` comme référence :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    sexe = forcats::fct_relevel(sexe, "Femme")
+  )
+
+levels(df_prepare$sexe)
+```
+
+Même logique pour une catégorie d’âge :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    age_cat = forcats::fct_relevel(age_cat, "18–34")
+  )
+```
+
+# 19. Construire le jeu final d’analyse
+
+```{r}
+#| eval: false
+df_analyse <- df_prepare |>
+  select(
+    sport,
+    sport01,
+    sexe,
+    age,
+    age_cat,
+    etudes_cat,
+    occup_cat,
+    tv_cat,
+    cuisine,
+    bricol
+  )
+```
+
+Nous vérifions :
+
+```{r}
+#| eval: false
+glimpse(df_analyse)
+summary(df_analyse)
+```
+
+# 20. La fiche de traçabilité
+
+Pour chaque transformation, consignez :
+
+| Variable initiale | Variable créée | Décision | Justification | Vérification |
+|---|---|---|---|---|
+| `age` | `age_cat` | 3 classes | comparaison lisible des générations | bornes + effectifs |
+| `heures_tv` | `tv_cat` | 0 / 1–2 / 3+ | distinguer absence, usage modéré, fort usage | tableau croisé |
+| `niveau_etudes` | `etudes_cat` | regroupement | éviter trop de modalités rares | ancien × nouveau |
+| `occup` | `occup_cat` | 3 statuts | synthèse de position vis-à-vis de l’activité | ancien × nouveau |
+| `sport` | `sport01` | Oui=1 / Non=0 | préparer un modèle binaire | tableau croisé |
+
+# 21. Atelier guidé — préparer un fichier pour étudier le sport
+
+## Question
+
+Quels profils sociaux sont associés à la pratique du sport ?
+
+## Étape 1 — sélectionner
+
+Créez `tp_sport` avec :
+
+- `id`
+- `sport`
+- `age`
+- `sexe`
+- `nivetud`
+- `occup`
+- `heures.tv`
+
+## Étape 2 — inspecter
+
+Pour chaque variable :
+
+- type ;
+- modalités ou résumé ;
+- nombre de manquants.
+
+## Étape 3 — recoder
+
+Créez :
+
+- `age_cat` : 18–29 / 30–49 / 50–64 / 65+ ;
+- `tv_cat` : 0–1 h / 2 h / 3 h ou plus ;
+- `etudes_cat` : faible / moyen / supérieur.
+
+## Étape 4 — contrôler
+
+Pour chaque variable créée, produisez un tableau entre variable initiale et variable recodée.
+
+## Étape 5 — cas complets
+
+Construisez `tp_sport_complet` avec uniquement les lignes complètes pour les variables de l’analyse.
+
+Calculez :
+
+- effectif initial ;
+- effectif final ;
+- nombre perdu ;
+- pourcentage perdu.
+
+## Étape 6 — rédiger
+
+Écrivez trois phrases expliquant :
+
+1. pourquoi vous avez choisi ces recodages ;
+2. combien d’observations sont perdues ;
+3. quelle limite cette suppression peut poser.
+
+# 22. Exercice “trouver l’erreur”
+
+Voici un code :
+
+```{r}
+#| eval: false
+df <- hdv2003 |>
+  mutate(
+    age_cat = case_when(
+      age < 35 ~ "18–34",
+      age < 55 ~ "35–54",
+      TRUE ~ "55+"
+    )
+  )
+```
+
+Questions :
+
+1. Que deviennent les `NA` de `age` ?
+2. Pourquoi est-ce un problème ?
+3. Corrigez le code.
+
+## Correction de principe
+
+Avec ce code, un âge manquant ne satisfait aucune des deux premières conditions et tombe dans `TRUE ~ "55+"`. Il serait donc faussement classé parmi les 55 ans et plus.
+
+Il faut écrire :
+
+```{r}
+#| eval: false
+df <- hdv2003 |>
+  mutate(
+    age_cat = case_when(
+      is.na(age) ~ NA_character_,
+      age < 35 ~ "18–34",
+      age < 55 ~ "35–54",
+      TRUE ~ "55+"
+    )
+  )
+```
+
+Cet exemple montre pourquoi il faut réfléchir à l’ordre des conditions dans `case_when()`.
+
+# 23. Exercice “recodage défendable ou non ?”
+
+Pour chacune des propositions, dites si le recodage vous semble défendable et dans quel contexte.
+
+### Proposition A
+
+Regrouper retraités et étudiants dans “Inactifs”.
+
+### Proposition B
+
+Regrouper toutes les pratiques sportives en Oui/Non.
+
+### Proposition C
+
+Transformer l’âge en deux groupes : moins de 65 ans / 65 ans et plus.
+
+### Proposition D
+
+Transformer le nombre d’heures de télévision en faible / fort selon la médiane.
+
+Il n’y a pas toujours une réponse unique. L’objectif est d’apprendre à **argumenter un choix**.
+
+# 24. Erreurs fréquentes
+
+## Supprimer tous les NA dès le départ
+
+```{r}
+#| eval: false
+df <- na.omit(df_brut)
+```
+
+Cela supprime des lignes pour des variables qui ne seront peut-être jamais utilisées.
+
+## Recoder sans vérifier les libellés
+
+Écrire un `case_when()` à partir de modalités supposées peut produire beaucoup de `NA`.
+
+## Utiliser des classes d’âge arbitraires
+
+Les seuils doivent avoir un sens analytique ou pédagogique.
+
+## Mélanger préparation et analyse
+
+Il est préférable de construire d’abord un jeu propre, puis de produire les résultats.
+
+## Écraser la variable initiale
+
+Conserver `age` en plus de `age_cat` permet de contrôler le recodage et de revenir en arrière.
+
+# 25. Checklist de fin de préparation
+
+Avant de passer au descriptif, vérifiez :
+
+- [ ] l’objet brut existe encore ;
+- [ ] l’unité d’analyse est claire ;
+- [ ] les variables nécessaires ont été inspectées ;
+- [ ] les modalités spéciales ont été identifiées ;
+- [ ] chaque recodage a été contrôlé ;
+- [ ] les références des facteurs importants sont connues ;
+- [ ] les NA ont fait l’objet d’une décision explicite ;
+- [ ] l’effectif final est connu ;
+- [ ] la perte d’observations est quantifiée ;
+- [ ] les transformations sont documentées.
+
+Si ces dix points sont satisfaits, vous avez un jeu prêt pour l’analyse descriptive.
