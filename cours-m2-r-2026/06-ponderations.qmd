@@ -1,0 +1,84 @@
+---
+title: "6 — Pondérations et données d’enquête"
+---
+
+# Pourquoi pondérer ?
+
+Dans certaines enquêtes, les observations n’ont pas toutes le même poids. Dans d’autres fichiers, une ligne résume plusieurs individus.
+
+Le jeu `MASS::housing` est un excellent exemple : chaque ligne est un profil `Sat × Infl × Type × Cont`, et `Freq` indique combien d’habitants appartiennent à ce profil.
+
+# 1. Le mauvais réflexe
+
+```{r}
+#| eval: false
+nrow(MASS::housing)
+```
+
+Ce nombre est le nombre de **profils**, pas le nombre d’habitants.
+
+# 2. L’effectif représenté
+
+```{r}
+#| eval: false
+df <- MASS::housing
+sum(df$Freq)
+```
+
+# 3. Une distribution pondérée simple
+
+```{r}
+#| eval: false
+df |>
+  group_by(Sat) |>
+  summarise(n = sum(Freq), .groups = "drop") |>
+  mutate(pct = 100 * n / sum(n))
+```
+
+# 4. Construire un objet survey
+
+```{r}
+#| eval: false
+library(survey)
+
+design_housing <- svydesign(
+  ids = ~1,
+  weights = ~Freq,
+  data = df
+)
+```
+
+Ici, `Freq` agit comme un poids de fréquence.
+
+# 5. Tableau descriptif pondéré
+
+```{r}
+#| eval: false
+design_housing |>
+  gtsummary::tbl_svysummary(
+    include = c(Sat, Infl, Type, Cont)
+  )
+```
+
+# 6. Modèle pondéré
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(SatHigh = if_else(Sat == "High", 1L, 0L))
+
+modele_p <- glm(
+  SatHigh ~ Infl + Type + Cont,
+  data = df,
+  weights = Freq,
+  family = binomial()
+)
+```
+
+Pour un véritable plan complexe (strates, grappes, probabilités d’inclusion), on utilisera les fonctions du package `survey` pour l’inférence, et non un simple `glm(weights = ...)`.
+
+# 7. Question professionnelle
+
+Avant toute restitution, demandez : **mes pourcentages décrivent-ils les lignes du fichier ou la population qu’elles représentent ?**
+
+Cette question évite l’une des erreurs les plus graves en analyse d’enquête.
