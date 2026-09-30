@@ -1,0 +1,114 @@
+---
+title: "1 — Démarrer une analyse d’enquête"
+---
+
+# Objectifs
+
+À la fin de ce chapitre, vous saurez :
+
+- distinguer **unité d’analyse**, variable et modalité ;
+- ouvrir un projet RStudio et travailler sans chemin absolu ;
+- inspecter un jeu de données sans le modifier ;
+- repérer les types de variables et les valeurs manquantes ;
+- construire un diagnostic avant toute analyse.
+
+# 1. Une enquête n’est pas seulement un tableau
+
+Avant R, il faut répondre à trois questions.
+
+**Qui ou quoi représente une ligne ?**  
+Dans une enquête individuelle, une ligne représente généralement une personne. Mais ce n’est pas toujours le cas : dans `MASS::housing`, une ligne représente un profil et la variable `Freq` indique combien de personnes ont ce profil.
+
+**Que représente une colonne ?**  
+Une colonne peut être une mesure numérique, une catégorie, un identifiant, un poids d’enquête ou une information construite.
+
+**Que signifie une valeur manquante ?**  
+Un `NA` peut correspondre à une non-réponse, une question non posée, une information inconnue ou une valeur supprimée. Ces situations n’ont pas toutes le même sens sociologique.
+
+# 2. Toujours partir d’un projet
+
+Un projet rend le travail portable. Évitez :
+
+```{r}
+#| eval: false
+read.csv("C:/Users/mon_nom/Desktop/enquete.csv")
+```
+
+Préférez un chemin relatif au projet :
+
+```{r}
+#| eval: false
+readr::read_csv("data/enquete.csv")
+```
+
+# 3. Premier diagnostic
+
+```{r}
+#| eval: false
+library(questionr)
+library(tidyverse)
+library(labelled)
+
+data(hdv2003)
+df_brut <- hdv2003
+
+dim(df_brut)
+names(df_brut)
+glimpse(df_brut)
+head(df_brut)
+look_for(df_brut)
+```
+
+## Comment lire ces sorties ?
+
+- `dim()` : combien de lignes et de colonnes ?
+- `names()` : quelles variables existent ?
+- `glimpse()` : quel type R pour chaque variable ?
+- `head()` : à quoi ressemblent quelques observations ?
+- `look_for()` : quels labels et quelles modalités sont disponibles ?
+
+# 4. Faire l’inventaire des valeurs manquantes
+
+```{r}
+#| eval: false
+df_brut |>
+  summarise(across(everything(), ~ sum(is.na(.x)))) |>
+  pivot_longer(
+    everything(),
+    names_to = "variable",
+    values_to = "n_manquants"
+  ) |>
+  arrange(desc(n_manquants))
+```
+
+Cette table ne dit pas encore quoi faire. Elle dit **où regarder**.
+
+# 5. Le diagnostic attendu
+
+Avant toute transformation, rédigez cinq lignes :
+
+1. l’unité d’analyse ;
+2. l’effectif brut ;
+3. les variables importantes pour la question ;
+4. les variables contenant des manquants ;
+5. les décisions qui devront être prises avant l’analyse.
+
+# 6. Pièges fréquents
+
+- commencer par `na.omit()` sur tout le fichier ;
+- convertir toutes les variables en facteurs sans raison ;
+- ignorer les labels ;
+- modifier l’objet brut ;
+- travailler directement dans la console sans script ;
+- confondre “code qui s’exécute” et “analyse correcte”.
+
+# Exercice minute
+
+Avec `hdv2003`, trouvez :
+
+- le nombre d’observations ;
+- le type de `age`, `sexe`, `nivetud`, `sport` ;
+- le nombre de valeurs manquantes de ces quatre variables ;
+- une phrase expliquant l’unité d’analyse.
+
+Ne transformez encore aucune variable.
