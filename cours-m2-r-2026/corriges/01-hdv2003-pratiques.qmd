@@ -1,0 +1,271 @@
+---
+title: "Corrigé 1 — Pratiques culturelles avec hdv2003"
+---
+
+# Objectif du corrigé
+
+Ce corrigé montre **la démarche** autant que le code. Après chaque transformation, on contrôle le résultat avant de poursuivre.
+
+# A. Diagnostic
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(questionr)
+library(gtsummary)
+library(labelled)
+library(ggeffects)
+
+data(hdv2003)
+df_brut <- hdv2003
+
+dim(df_brut)
+glimpse(df_brut)
+
+variables <- c(
+  "cuisine", "sexe", "age", "nivetud",
+  "occup", "heures.tv", "bricol", "sport"
+)
+
+df_brut |>
+  select(all_of(variables)) |>
+  summarise(across(everything(), ~ sum(is.na(.x)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "n_na")
+```
+
+**Lecture attendue.** Une ligne correspond à un individu enquêté. Avant tout recodage, on vérifie les niveaux exacts des facteurs :
+
+```{r}
+#| eval: false
+lapply(df_brut[c("cuisine", "sexe", "nivetud", "occup", "bricol", "sport")], levels)
+summary(df_brut$age)
+summary(df_brut$heures.tv)
+```
+
+# B. Recodages
+
+## Âge et télévision
+
+```{r}
+#| eval: false
+df_prepare <- df_brut |>
+  mutate(
+    age_cat = cut(
+      age,
+      breaks = c(18, 35, 55, Inf),
+      right = FALSE,
+      labels = c("18–34", "35–54", "55+")
+    ),
+    tv_cat = case_when(
+      heures.tv == 0 ~ "0 h",
+      heures.tv %in% 1:2 ~ "1–2 h",
+      heures.tv >= 3 ~ "3 h ou +",
+      TRUE ~ NA_character_
+    ),
+    tv_cat = factor(tv_cat, levels = c("0 h", "1–2 h", "3 h ou +"))
+  )
+
+table(df_prepare$age, df_prepare$age_cat, useNA = "ifany")
+table(df_prepare$heures.tv, df_prepare$tv_cat, useNA = "ifany")
+```
+
+Le tableau croisé est un **test de cohérence du recodage**. Il permet de voir immédiatement si une valeur a été classée dans le mauvais groupe.
+
+## Niveau d’études
+
+On inspecte d’abord :
+
+```{r}
+#| eval: false
+levels(df_prepare$nivetud)
+```
+
+Puis on regroupe en conservant une logique scolaire lisible :
+
+```{r}
+#| eval: false
+df_prepare <- df_prepare |>
+  mutate(
+    etudes_cat = forcats::fct_collapse(
+      nivetud,
+      "Primaire" = c(
+        "N'a jamais fait d'etudes",
+        "A arrete ses etudes, avant la derniere annee d'etudes primaires",
+        "Derniere annee d'etudes primaires"
+      ),
+      "Secondaire" = c("1er cycle", "2eme cycle"),
+      "Supérieur" = c(
+        "Enseignement technique ou professionnel court",
+        "Enseignement technique ou professionnel long",
+        "Enseignement superieur y compris technique superieur"
+      )
+    )
+  )
+
+table(df_prepare$nivetud, df_prepare$etudes_cat, useNA = "ifany")
+```
+
+::: callout-note
+On pourrait distinguer enseignement professionnel et supérieur. Ici, le regroupement est volontairement compact pour un exercice de modélisation. Dans une étude réelle, il faut justifier cette convention.
+:::
+
+## Occupation
+
+```{r}
+#| eval: false
+levels(df_prepare$occup)
+
+df_prepare <- df_prepare |>
+  mutate(
+    occup_cat = case_when(
+      occup %in% c("Exerce une profession", "Chomeur") ~ "Actifs",
+      occup %in% c("Etudiant, eleve", "Au foyer") ~ "Formation / foyer",
+      occup %in% c("Retraite", "Retire des affaires", "Autre inactif") ~ "Hors marché du travail",
+      TRUE ~ NA_character_
+    ),
+    occup_cat = factor(
+      occup_cat,
+      levels = c("Actifs", "Formation / foyer", "Hors marché du travail")
+    )
+  )
+
+table(df_prepare$occup, df_prepare$occup_cat, useNA = "ifany")
+```
+
+# C. Jeu d’analyse et pertes
+
+```{r}
+#| eval: false
+df_analyse <- df_prepare |>
+  select(
+    cuisine, sexe, age_cat, tv_cat, etudes_cat,
+    occup_cat, bricol, sport
+  )
+
+n_avant <- nrow(df_analyse)
+
+df_complet <- df_analyse |>
+  drop_na()
+
+n_apres <- nrow(df_complet)
+
+tibble(
+  n_avant = n_avant,
+  n_apres = n_apres,
+  perdus = n_avant - n_apres,
+  pct_perdus = 100 * (n_avant - n_apres) / n_avant
+)
+```
+
+**Interprétation attendue.** On ne dit pas seulement “j’ai supprimé les NA”. On quantifie la perte et on indique qu’une suppression complète peut modifier la composition de l’échantillon si les manquants ne sont pas aléatoires.
+
+# D. Description
+
+```{r}
+#| eval: false
+df_complet |>
+  tbl_summary(
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    missing = "no"
+  ) |>
+  bold_labels()
+```
+
+Puis selon la pratique de la cuisine :
+
+```{r}
+#| eval: false
+df_complet |>
+  tbl_summary(
+    by = cuisine,
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    percent = "column",
+    missing = "no"
+  ) |>
+  add_p() |>
+  bold_labels()
+```
+
+## Comment rédiger
+
+Choisissez les écarts **visuellement importants**, puis utilisez la p-value comme information complémentaire. Une rédaction correcte ressemble à :
+
+> “La pratique de la cuisine est plus fréquente dans [groupe] que dans [groupe]. L’écart est de X points. Le test indique [p-value]. Cette association peut être rapprochée de la division sociale des pratiques domestiques, mais le tableau descriptif ne permet pas de distinguer les effets d’âge, d’activité ou de sexe.”
+
+# E. Régression logistique
+
+Pour éviter toute ambiguïté sur la modalité modélisée :
+
+```{r}
+#| eval: false
+df_complet <- df_complet |>
+  mutate(
+    cuisine01 = if_else(cuisine == "Oui", 1L, 0L),
+    sexe = forcats::fct_relevel(sexe, "Femme")
+  )
+
+modele_1 <- glm(
+  cuisine01 ~ sexe + age_cat + tv_cat + etudes_cat +
+    occup_cat + bricol + sport,
+  data = df_complet,
+  family = binomial(link = "logit")
+)
+
+modele_1 |>
+  tbl_regression(
+    exponentiate = TRUE,
+    add_estimate_to_reference_row = TRUE
+  ) |>
+  add_global_p()
+```
+
+## Méthode d’interprétation d’un OR
+
+Pour chaque modalité :
+
+1. identifier la catégorie de référence ;
+2. lire l’OR ;
+3. lire l’IC95 % ;
+4. lire la p-value ;
+5. traduire en une phrase conditionnelle : “à caractéristiques incluses dans le modèle comparables…”.
+
+Exemple de formulation, à compléter avec la sortie :
+
+> “Toutes choses égales par ailleurs dans le modèle, les individus de [modalité] ont des cotes de pratique de la cuisine multipliées par [OR] par rapport à [référence] (IC95 % [... ; ...]).”
+
+# F. Interaction sexe × âge
+
+```{r}
+#| eval: false
+modele_2 <- glm(
+  cuisine01 ~ sexe * age_cat + tv_cat + etudes_cat +
+    occup_cat + bricol + sport,
+  data = df_complet,
+  family = binomial()
+)
+
+anova(modele_1, modele_2, test = "Chisq")
+```
+
+Le test compare le gain d’ajustement du modèle avec interaction.
+
+Pour interpréter, privilégiez les probabilités :
+
+```{r}
+#| eval: false
+ggeffects::predict_response(
+  modele_2,
+  terms = c("age_cat", "sexe")
+) |>
+  plot()
+```
+
+# G. Ce que l’on retient
+
+Le paragraphe final doit contenir :
+
+- un contraste descriptif ;
+- un résultat ajusté du modèle ;
+- une mention de l’interaction si elle est informative ;
+- une limite : données transversales, catégories construites, observations complètes ;
+- aucune formulation causale non justifiée.
