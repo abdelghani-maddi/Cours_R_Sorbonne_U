@@ -17,6 +17,9 @@ book:
     - 07-projet-conseil.qmd
     - part: "Exercices"
       chapters:
+        - exercices/00a-diagnostic-preparation-hdv.qmd
+        - exercices/00b-description-hdv.qmd
+        - exercices/00c-nettoyage-gss.qmd
         - exercices/01-hdv2003-pratiques.qmd
         - exercices/02-gss-cat-tv.qmd
         - exercices/03-survey-tabac.qmd
@@ -25,6 +28,9 @@ book:
         - exercices/06-biofam.qmd
     - part: "Corrigés"
       chapters:
+        - corriges/00a-diagnostic-preparation-hdv.qmd
+        - corriges/00b-description-hdv.qmd
+        - corriges/00c-nettoyage-gss.qmd
         - corriges/01-hdv2003-pratiques.qmd
         - corriges/02-gss-cat-tv.qmd
         - corriges/03-survey-tabac.qmd
