@@ -133,7 +133,7 @@ modele_1 |>
   add_global_p()
 ```
 
-## À commenter
+## Interprétation des résultats
 
 Pour `age_cat`, `marital` et `rincome_rec`, choisissez une modalité non-référence et rédigez :
 
@@ -187,7 +187,7 @@ factoextra::fviz_contrib(acm, choice = "var", axes = 1)
 factoextra::fviz_contrib(acm, choice = "var", axes = 2)
 ```
 
-# 9. Comment articuler les trois analyses ?
+# 9. Articulation des trois analyses
 
 - **Descriptif** : montre les écarts bruts.
 - **Régression** : compare les profils conditionnellement aux autres variables du modèle.
