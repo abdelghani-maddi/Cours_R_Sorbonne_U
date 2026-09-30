@@ -250,7 +250,7 @@ df_acm <- df |>
   drop_na()
 ```
 
-# 9. Pourquoi deux jeux ?
+# 9. Jeux d’analyse distincts
 
 Une analyse doit supprimer les valeurs manquantes uniquement sur les variables dont elle a besoin.
 
