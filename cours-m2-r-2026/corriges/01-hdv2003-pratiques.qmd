@@ -2,7 +2,7 @@
 title: "Corrigé 1 — Pratiques culturelles avec hdv2003"
 ---
 
-# Objectif du corrigé
+# Démarche de correction
 
 Ce corrigé montre **la démarche** autant que le code. Après chaque transformation, on contrôle le résultat avant de poursuivre.
 
@@ -33,7 +33,7 @@ df_brut |>
   pivot_longer(everything(), names_to = "variable", values_to = "n_na")
 ```
 
-**Lecture attendue.** Une ligne correspond à un individu enquêté. Avant tout recodage, on vérifie les niveaux exacts des facteurs :
+**Interprétation.** Une ligne correspond à un individu enquêté. Avant tout recodage, on vérifie les niveaux exacts des facteurs :
 
 ```{r}
 #| eval: false
@@ -186,7 +186,7 @@ df_complet |>
   bold_labels()
 ```
 
-## Comment rédiger
+## Rédaction des résultats
 
 Choisissez les écarts **visuellement importants**, puis utilisez la p-value comme information complémentaire. Une rédaction correcte ressemble à :
 
@@ -219,7 +219,7 @@ modele_1 |>
   add_global_p()
 ```
 
-## Méthode d’interprétation d’un OR
+## Interprétation d’un odds ratio
 
 Pour chaque modalité :
 
@@ -260,7 +260,7 @@ ggeffects::predict_response(
   plot()
 ```
 
-# G. Ce que l’on retient
+# G. Synthèse
 
 Le paragraphe final doit contenir :
 

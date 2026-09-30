@@ -161,14 +161,14 @@ Exemples :
 
 # Rythme d’une séance de 3 heures
 
-- 15 min : question sociologique et rappel du workflow ;
+- 15 min : question sociologique et rappel de la démarche d’analyse ;
 - 25 min : démonstration ;
 - 35 min : reproduction guidée ;
 - 15 min : correction collective ;
 - 40 min : TD en binômes ;
 - 20 min : mise en commun des choix ;
 - 20 min : exercice autonome ;
-- 10 min : synthèse / “ce qu’il faut retenir”.
+- 10 min : synthèse de séance.
 
 Cette organisation est particulièrement recommandée pour les séances 1 à 3 : l’apprentissage de R passe par la répétition de gestes simples dans plusieurs contextes.
 
@@ -203,7 +203,7 @@ La grille privilégie :
 
 Une bonne copie ne se limite donc jamais à des commandes R. Elle explicite les choix et les relie à la question étudiée.
 
-# Ce qui doit devenir automatique avant la régression
+# Prérequis avant la régression logistique
 
 Avant d’introduire `glm()`, les étudiants devraient être capables sans modèle fourni de :
 
@@ -222,7 +222,7 @@ Avant d’introduire `glm()`, les étudiants devraient être capables sans modè
 
 Si plusieurs de ces gestes restent fragiles, il est préférable de consacrer du temps supplémentaire à la préparation/description avant la régression.
 
-# Ce que l’on conserve de l’ancien cours
+# Éléments conservés de l’ancien cours
 
 Certaines briques du dépôt initial restent particulièrement utiles :
 

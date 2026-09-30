@@ -2,13 +2,13 @@
 title: "6 — Pondérations et données d’enquête"
 ---
 
-# Pourquoi pondérer ?
+# Principe des pondérations
 
 Dans certaines enquêtes, les observations n’ont pas toutes le même poids. Dans d’autres fichiers, une ligne résume plusieurs individus.
 
 Le jeu `MASS::housing` est un excellent exemple : chaque ligne est un profil `Sat × Infl × Type × Cont`, et `Freq` indique combien d’habitants appartiennent à ce profil.
 
-# 1. Le mauvais réflexe
+# 1. Lignes du fichier et effectif représenté
 
 ```{r}
 #| eval: false
@@ -77,7 +77,7 @@ modele_p <- glm(
 
 Pour un véritable plan complexe (strates, grappes, probabilités d’inclusion), on utilisera les fonctions du package `survey` pour l’inférence, et non un simple `glm(weights = ...)`.
 
-# 7. Question professionnelle
+# 7. Point de contrôle pour la restitution
 
 Avant toute restitution, demandez : **mes pourcentages décrivent-ils les lignes du fichier ou la population qu’elles représentent ?**
 

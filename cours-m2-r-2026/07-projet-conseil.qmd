@@ -10,7 +10,7 @@ Dans un contexte professionnel, le commanditaire ne demande presque jamais “fa
 
 Votre travail est de transformer cette question en stratégie d’analyse.
 
-# 1. Reformuler
+# 1. Reformulation de la demande
 
 Écrire en une phrase :
 
@@ -19,7 +19,7 @@ Votre travail est de transformer cette question en stratégie d’analyse.
 - les comparaisons importantes ;
 - la finalité de la décision.
 
-# 2. Construire un plan d’analyse
+# 2. Plan d’analyse
 
 Exemple :
 
@@ -52,7 +52,7 @@ Deux à quatre phrases de contexte.
 
 Population, effectif, variables, traitement des manquants, méthode.
 
-## Trois résultats à retenir
+## Résultats principaux
 
 Un tableau ou graphique par idée principale.
 

@@ -15,7 +15,7 @@ L’ancien dépôt contient plusieurs matériaux pédagogiquement utiles :
 
 Ces éléments sont réutilisés dans une progression explicite.
 
-# Ce qui change
+# Organisation retenue
 
 ## 1. Une seule progression
 

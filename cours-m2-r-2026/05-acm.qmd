@@ -2,7 +2,7 @@
 title: "5 — Analyse des correspondances multiples"
 ---
 
-# À quoi sert l’ACM ?
+# Principe de l’analyse des correspondances multiples
 
 L’ACM sert à explorer les structures d’association entre plusieurs **variables qualitatives**. Elle est particulièrement adaptée à l’étude de profils sociaux, de pratiques ou d’attitudes.
 
@@ -60,7 +60,7 @@ factoextra::fviz_mca_var(
 )
 ```
 
-## Comment lire la carte ?
+## Lecture de la carte
 
 Ne lisez pas seulement la proximité visuelle. Pour chaque axe :
 
@@ -80,7 +80,7 @@ factoextra::fviz_contrib(acm_1, choice = "var", axes = 2)
 
 Une modalité proche de l’origine contribue peu à la structuration d’un axe, même si son étiquette attire l’œil.
 
-# 6. Trame d’interprétation
+# 6. Interprétation des axes
 
 **Axe 1.** “L’axe 1 oppose principalement … à … . Cette opposition est portée par les modalités …, qui contribuent fortement à l’axe. Sociologiquement, cet axe peut être lu comme …”
 

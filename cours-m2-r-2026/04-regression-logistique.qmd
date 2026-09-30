@@ -2,7 +2,7 @@
 title: "4 — Régression logistique"
 ---
 
-# Pourquoi une régression logistique ?
+# Principe de la régression logistique
 
 On l’utilise lorsque la variable à expliquer est binaire : pratiquer/ne pas pratiquer, satisfait/non satisfait, fumeur/non-fumeur, etc.
 
@@ -94,7 +94,7 @@ ggeffects::predict_response(
   plot()
 ```
 
-# 6. Ce qu’un modèle ne prouve pas
+# 6. Limites d’interprétation
 
 Une association ajustée n’est pas automatiquement causale. Le modèle dépend :
 
@@ -105,7 +105,7 @@ Une association ajustée n’est pas automatiquement causale. Le modèle dépend
 - de la spécification choisie ;
 - du plan d’échantillonnage.
 
-# Checklist avant de commenter
+# Points de contrôle avant interprétation
 
 - La variable dépendante est-elle bien codée ?
 - Les références sont-elles explicites ?

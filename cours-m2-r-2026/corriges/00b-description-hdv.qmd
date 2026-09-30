@@ -179,7 +179,7 @@ test_age_sport$expected
 test_age_sport$stdres
 ```
 
-## Méthode de lecture
+## Lecture du test
 
 1. lire la p-value globale ;
 2. vérifier les effectifs attendus ;
@@ -307,7 +307,7 @@ df |>
   theme_minimal()
 ```
 
-# 12. Trame de commentaire
+# 12. Rédaction du commentaire
 
 Une réponse de qualité ne doit pas commencer par “p < 0,05”.
 

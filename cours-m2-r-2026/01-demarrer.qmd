@@ -17,7 +17,7 @@ title: "1 — Démarrer une analyse d’enquête"
 
 L’objectif n’est pas encore de “faire des statistiques”. Nous apprenons d’abord à **comprendre ce que nous avons entre les mains**.
 
-# 1. Avant R : quelle est l’unité d’analyse ?
+# 1. Unité d’analyse
 
 Un fichier d’enquête ressemble à une table, mais toutes les tables ne représentent pas la même chose.
 
@@ -47,7 +47,7 @@ Avant la première commande R, soyez capable de compléter la phrase :
 > **“Une ligne du fichier représente…”**
 :::
 
-## Exemple : pourquoi cela change tout
+## Exemple : données individuelles et données agrégées
 
 Dans `MASS::housing`, une ligne décrit une combinaison de modalités et la colonne `Freq` donne le nombre d’habitants correspondant à cette combinaison.
 
@@ -84,7 +84,7 @@ Par exemple, pour une variable `sexe`, les modalités peuvent être `Femme` et `
 
 La valeur est ce qui est effectivement enregistré pour une observation donnée.
 
-# 3. Le type sociologique et le type R ne sont pas la même chose
+# 3. Nature statistique et type de stockage
 
 Une variable peut être enregistrée comme nombre dans R sans être une quantité au sens statistique.
 
@@ -122,7 +122,7 @@ Un travail reproductible repose sur quatre éléments :
 3. des données ;
 4. des sorties que l’on peut reconstruire.
 
-## À éviter
+## Chemins absolus
 
 ```{r}
 #| eval: false
@@ -131,7 +131,7 @@ read.csv("C:/Users/mon_nom/Desktop/enquete.csv")
 
 Ce code dépend d’un ordinateur précis.
 
-## À privilégier
+## Chemins relatifs au projet
 
 ```{r}
 #| eval: false
@@ -140,7 +140,7 @@ readr::read_csv("data/enquete.csv")
 
 Le chemin est relatif au projet.
 
-# 5. Anatomie d’un script propre
+# 5. Organisation d’un script
 
 Un script de cours ou d’examen peut suivre cette structure :
 
@@ -196,7 +196,7 @@ Plus utile :
 table(df_brut$sexe, useNA = "ifany")
 ```
 
-# 6. Notre premier jeu : hdv2003
+# 6. Jeu de données hdv2003
 
 `hdv2003`, fourni par le package `questionr`, contient des informations sociodémographiques et des pratiques culturelles et de loisirs.
 
@@ -210,11 +210,9 @@ data(hdv2003)
 df_brut <- hdv2003
 ```
 
-Pourquoi créer `df_brut` ?
+L’objet `df_brut` conserve le jeu tel qu’il a été chargé. Les transformations sont effectuées dans des objets distincts.
 
-Parce que nous voulons garder une copie du jeu tel qu’il a été chargé. Les transformations seront faites dans d’autres objets.
-
-# 7. Combien de lignes et de colonnes ?
+# 7. Dimensions du fichier
 
 ```{r}
 #| eval: false
@@ -233,7 +231,7 @@ Ces commandes répondent à trois questions simples :
 Lors d’un examen, notez l’effectif initial. Vous pourrez ensuite mesurer combien d’observations ont été perdues pendant le nettoyage.
 :::
 
-# 8. Quels sont les noms des variables ?
+# 8. Noms des variables
 
 ```{r}
 #| eval: false
@@ -500,7 +498,7 @@ Rédigez cinq phrases :
 4. valeurs manquantes importantes ;
 5. décisions qui devront être prises avant d’étudier la pratique du sport.
 
-# 21. À vous de faire — sans corrigé immédiat
+# 21. Exercice autonome
 
 Avec le même jeu :
 
@@ -533,7 +531,7 @@ Une variable `income` peut être numérique, catégorielle, ordonnée ou conteni
 
 Un résultat calculé sur 2 000 individus et un autre sur 800 individus ne décrivent pas forcément la même population.
 
-# 23. Ce qu’il faut retenir
+# 23. Synthèse
 
 Avant de nettoyer ou de modéliser :
 

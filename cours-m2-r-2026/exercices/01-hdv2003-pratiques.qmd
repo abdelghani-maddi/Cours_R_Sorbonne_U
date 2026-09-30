@@ -48,4 +48,4 @@ P(cuisine = Oui) = f(sexe, age\_cat, tv\_cat, etudes\_cat, occup\_cat, bricol, s
 
 ## E. Restitution
 
-Rédiger un encadré de 150 mots maximum intitulé **“Ce que l’on retient”** : deux résultats, une limite et une implication possible pour l’analyse des pratiques domestiques.
+Rédiger un encadré de 150 mots maximum intitulé **“Synthèse des résultats”** : deux résultats, une limite et une implication possible pour l’analyse des pratiques domestiques.

@@ -19,6 +19,6 @@ Le jeu `MASS::housing` décrit des profils résidentiels à Copenhague. Une lign
 9. Comparer explicitement un résultat pondéré et un résultat qui ignorerait `Freq`.
 10. Réaliser une ACM sur `Sat`, `Infl`, `Type`, `Cont` en tenant compte des effectifs, par pondération ou expansion raisonnée.
 
-# Question finale
+# Synthèse
 
-Pourquoi ignorer `Freq` constitue-t-il ici une erreur d’unité d’analyse, et pas simplement un choix de présentation ?
+Expliquez en quoi l’ignorance de `Freq` constitue ici une erreur d’unité d’analyse plutôt qu’un simple choix de présentation.

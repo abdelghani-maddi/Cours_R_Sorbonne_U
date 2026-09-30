@@ -2,11 +2,11 @@
 title: "Bienvenue"
 ---
 
-# Ce que vous allez apprendre
+# Présentation du cours
 
-Ce cours vous accompagne dans un **workflow complet d’analyse de données d’enquête**. La priorité est donnée au raisonnement sociologique : comprendre ce que représente une variable, faire des choix de préparation explicites, produire des résultats reproductibles et savoir les interpréter.
+Ce cours vous accompagne dans une **démarche complète d’analyse de données d’enquête**. La priorité est donnée au raisonnement sociologique : comprendre ce que représente une variable, faire des choix de préparation explicites, produire des résultats reproductibles et savoir les interpréter.
 
-## Le fil conducteur
+## Démarche générale
 
 À chaque nouvelle analyse, posez-vous sept questions :
 
@@ -30,7 +30,7 @@ Ce cours vous accompagne dans un **workflow complet d’analyse de données d’
 | 6 | Pondérations | descriptifs pondérés |
 | 7 | Restitution | note d’analyse reproductible |
 
-## Règle d’or
+## Principe de travail
 
 > Un script correct n’est pas seulement un script qui “tourne”. C’est un script que l’on peut relire, justifier, modifier et transmettre.
 

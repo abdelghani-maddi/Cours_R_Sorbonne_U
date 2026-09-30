@@ -55,13 +55,13 @@ df |>
   )
 ```
 
-## Moyenne ou médiane ?
+## Moyenne et médiane
 
 La **moyenne** résume bien une distribution relativement symétrique.
 
 La **médiane** est plus robuste aux valeurs extrêmes et aux distributions asymétriques.
 
-Le bon réflexe est de regarder aussi la distribution.
+L’examen de la distribution complète l’interprétation de ces indicateurs.
 
 ```{r}
 #| eval: false
@@ -102,7 +102,7 @@ df |>
   )
 ```
 
-# 4. Le dénominateur : question centrale des pourcentages
+# 4. Dénominateurs des pourcentages
 
 Un pourcentage n’a de sens que si l’on sait “sur combien”.
 
@@ -230,7 +230,7 @@ df |>
   add_p()
 ```
 
-## Ce que fait add_p()
+## Tests associés au tableau
 
 `add_p()` choisit un test adapté selon les variables et les paramètres du tableau.
 
@@ -238,7 +238,7 @@ Mais l’étudiant doit toujours savoir ce qu’il cherche à tester.
 
 La p-value ne remplace pas la lecture des proportions.
 
-# 9. Comment lire un tableau descriptif stratifié
+# 9. Lecture d’un tableau descriptif stratifié
 
 Une lecture efficace suit cet ordre :
 
@@ -320,7 +320,7 @@ On peut alors :
 - envisager un test exact dans certains cas ;
 - surtout ne pas ignorer le problème.
 
-# 13. Résidus standardisés : où se situe l’association ?
+# 13. Résidus standardisés
 
 Le χ² global indique qu’il existe ou non une association, mais pas directement quelles cases contribuent le plus.
 
@@ -520,7 +520,7 @@ Rédigez un commentaire de 5 lignes maximum qui contient :
 - une interprétation possible ;
 - une limite.
 
-# 20. Exercice “quelle statistique choisir ?”
+# 20. Exercice 1 — Choix des statistiques descriptives
 
 Pour chaque variable, choisissez la description la plus pertinente.
 
@@ -548,7 +548,7 @@ Pour chaque variable, choisissez la description la plus pertinente.
 
 L’objectif est de relier le choix statistique à la nature de la variable.
 
-# 21. Exercice “ligne ou colonne ?”
+# 21. Exercice 2 — Pourcentages en ligne et en colonne
 
 On étudie la pratique du cinéma selon le sexe.
 
@@ -566,7 +566,7 @@ Il faut des pourcentages **en colonne** dans cette disposition.
 
 Écrivez les deux commandes avec `prop.table()`.
 
-# 22. Exercice “ne pas tomber amoureux de p < 0,05”
+# 22. Exercice 3 — Significativité et ampleur des écarts
 
 Supposons :
 
@@ -623,7 +623,7 @@ df |>
   bold_labels()
 ```
 
-# 24. Comment rédiger une interprétation
+# 24. Rédaction de l’interprétation
 
 Une bonne phrase comporte quatre niveaux.
 
@@ -689,7 +689,7 @@ Puis :
 7. produisez un graphique ;
 8. rédigez un commentaire de 10 lignes maximum.
 
-# 27. Ce qu’il faut retenir
+# 27. Synthèse
 
 Une description solide distingue toujours :
 
