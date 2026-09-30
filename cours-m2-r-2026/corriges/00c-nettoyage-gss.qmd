@@ -1,0 +1,261 @@
+---
+title: "Corrigé TD 0C — Nettoyage et non-réponse avec gss_cat"
+---
+
+# 1. Diagnostic
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(forcats)
+
+data(gss_cat, package = "forcats")
+
+df <- gss_cat |>
+  select(
+    age,
+    sex,
+    marital,
+    relig,
+    race,
+    rincome,
+    partyid,
+    tvhours
+  )
+
+glimpse(df)
+```
+
+Nombre de valeurs manquantes :
+
+```{r}
+#| eval: false
+df |>
+  summarise(
+    across(
+      everything(),
+      ~ sum(is.na(.x))
+    )
+  )
+```
+
+Nombre de modalités :
+
+```{r}
+#| eval: false
+df |>
+  summarise(
+    across(
+      where(is.factor),
+      ~ nlevels(.x)
+    )
+  )
+```
+
+# 2. Modalités spéciales du revenu
+
+```{r}
+#| eval: false
+levels(df$rincome)
+table(df$rincome, useNA = "ifany")
+```
+
+Les modalités telles que `No answer`, `Don't know` ou `Refused` ne décrivent pas un revenu. Elles décrivent une **situation de réponse**.
+
+C’est une différence importante avec `NA` :
+
+- `NA` signifie que R stocke une valeur manquante ;
+- `No answer` est une modalité explicite du questionnaire et reste donc une valeur du facteur.
+
+# 3. Recoder rincome
+
+Une solution pédagogique possible :
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    rincome_rec = case_when(
+      rincome %in% c(
+        "No answer",
+        "Don't know",
+        "Refused"
+      ) ~ "Non-réponse",
+
+      rincome %in% c(
+        "Lt $1000",
+        "$1000 to 2999",
+        "$3000 to 3999",
+        "$4000 to 4999",
+        "$5000 to 5999",
+        "$6000 to 6999",
+        "$7000 to 7999",
+        "$8000 to 9999"
+      ) ~ "Bas",
+
+      rincome %in% c(
+        "$10000 - 14999",
+        "$15000 - 19999"
+      ) ~ "Moyen",
+
+      rincome %in% c(
+        "$20000 - 24999",
+        "$25000 or more"
+      ) ~ "Élevé",
+
+      TRUE ~ NA_character_
+    ),
+    rincome_rec = factor(
+      rincome_rec,
+      levels = c(
+        "Bas",
+        "Moyen",
+        "Élevé",
+        "Non-réponse"
+      )
+    )
+  )
+
+table(
+  df$rincome,
+  df$rincome_rec,
+  useNA = "ifany"
+)
+```
+
+::: callout-warning
+Ce regroupement est utile pour un exercice, mais les seuils ne doivent pas être présentés comme universels. Ils dépendent du contexte historique du GSS et de la question étudiée.
+:::
+
+# 4. Âge
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    age_cat = cut(
+      age,
+      breaks = c(18, 35, 55, Inf),
+      right = FALSE,
+      labels = c("18–34", "35–54", "55+")
+    )
+  )
+
+table(df$age, df$age_cat, useNA = "ifany")
+```
+
+# 5. Forte consommation de télévision
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    tv_high = case_when(
+      is.na(tvhours) ~ NA_character_,
+      tvhours >= 3 ~ "3 h ou plus",
+      TRUE ~ "Moins de 3 h"
+    ),
+    tv_high = factor(
+      tv_high,
+      levels = c(
+        "Moins de 3 h",
+        "3 h ou plus"
+      )
+    )
+  )
+
+table(
+  df$tvhours,
+  df$tv_high,
+  useNA = "ifany"
+)
+```
+
+L’ordre de `case_when()` est important : on traite les `NA` avant le `TRUE`.
+
+# 6. Catégories rares
+
+Religion :
+
+```{r}
+#| eval: false
+df |>
+  count(relig, sort = TRUE)
+```
+
+Parti :
+
+```{r}
+#| eval: false
+df |>
+  count(partyid, sort = TRUE)
+```
+
+Regroupement :
+
+```{r}
+#| eval: false
+df <- df |>
+  mutate(
+    relig_rec = fct_lump_min(
+      relig,
+      min = 100,
+      other_level = "Autres religions"
+    ),
+    partyid_rec = fct_lump_min(
+      partyid,
+      min = 100,
+      other_level = "Autres positions"
+    )
+  )
+
+nlevels(df$relig)
+nlevels(df$relig_rec)
+
+nlevels(df$partyid)
+nlevels(df$partyid_rec)
+```
+
+Le seuil de 100 est ici pédagogique. Dans une vraie analyse, on regarde les effectifs relatifs, la signification des catégories et l’usage prévu.
+
+# 7. Jeu pour la régression
+
+```{r}
+#| eval: false
+df_reg <- df |>
+  select(
+    tv_high,
+    age_cat,
+    sex,
+    marital,
+    rincome_rec
+  ) |>
+  drop_na()
+```
+
+# 8. Jeu pour l’ACM
+
+```{r}
+#| eval: false
+df_acm <- df |>
+  select(
+    marital,
+    relig_rec,
+    race,
+    rincome_rec,
+    partyid_rec,
+    age_cat,
+    tv_high
+  ) |>
+  drop_na()
+```
+
+# 9. Pourquoi deux jeux ?
+
+Une analyse doit supprimer les valeurs manquantes uniquement sur les variables dont elle a besoin.
+
+La régression et l’ACM n’utilisent pas exactement les mêmes variables. Exiger artificiellement un jeu unique complet sur toutes les variables ferait perdre des observations sans nécessité.
+
+C’est un principe important :
+
+> **Le jeu d’analyse doit être construit pour l’analyse réalisée, tout en restant traçable depuis le fichier brut.**
