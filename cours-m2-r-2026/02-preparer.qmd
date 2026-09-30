@@ -1,0 +1,114 @@
+---
+title: "2 — Préparer, nettoyer et recoder"
+---
+
+# Pourquoi préparer les données ?
+
+Le nettoyage n’est pas une étape “technique” séparée de la sociologie. Recoder une variable revient à décider quelles différences sont pertinentes pour la question étudiée.
+
+# 1. Conserver un objet brut
+
+```{r}
+#| eval: false
+df_brut <- questionr::hdv2003
+
+df_analyse <- df_brut |>
+  select(age, sexe, nivetud, occup, sport, heures.tv)
+```
+
+Le fichier brut reste intact. Toutes les transformations se font dans un nouvel objet.
+
+# 2. Examiner avant de recoder
+
+```{r}
+#| eval: false
+table(df_analyse$occup, useNA = "ifany")
+table(df_analyse$nivetud, useNA = "ifany")
+summary(df_analyse$age)
+```
+
+La règle est simple : **on ne recode pas une variable que l’on n’a pas inspectée**.
+
+# 3. Créer des classes d’âge
+
+```{r}
+#| eval: false
+df_analyse <- df_analyse |>
+  mutate(
+    age_cat = cut(
+      age,
+      breaks = c(18, 35, 55, Inf),
+      right = FALSE,
+      labels = c("18–34", "35–54", "55+")
+    )
+  )
+
+table(df_analyse$age_cat, useNA = "ifany")
+```
+
+## Pourquoi vérifier après ?
+
+Une faute dans les bornes peut exclure des individus. Le tableau de contrôle est obligatoire.
+
+# 4. Regrouper des modalités
+
+```{r}
+#| eval: false
+df_analyse <- df_analyse |>
+  mutate(
+    occup_cat = case_when(
+      occup %in% c("Exerce une profession", "Chomeur") ~ "Actifs",
+      occup %in% c("Etudiant, eleve", "Au foyer") ~ "Formation / foyer",
+      occup %in% c("Retraite", "Retire des affaires", "Autre inactif") ~ "Hors marché du travail",
+      TRUE ~ NA_character_
+    ),
+    occup_cat = factor(occup_cat)
+  )
+```
+
+Les libellés exacts doivent toujours être contrôlés avec `levels()` ou `table()` avant d’écrire le recodage.
+
+# 5. Valeurs manquantes : quatre stratégies
+
+**Conserver comme NA.** Utile lorsque l’on veut que chaque analyse travaille avec les observations disponibles.
+
+**Supprimer pour une analyse donnée.** À faire seulement sur les variables nécessaires à cette analyse.
+
+```{r}
+#| eval: false
+df_reg <- df_analyse |>
+  drop_na(sport, age_cat, sexe, nivetud)
+```
+
+**Créer une modalité explicite.** Possible si “non-réponse” est substantivement interprétable ; elle ne doit pas être utilisée automatiquement.
+
+```{r}
+#| eval: false
+x <- forcats::fct_na_value_to_level(x, level = "Non renseigné")
+```
+
+**Imputer.** Hors du socle de ce cours ; à mobiliser seulement avec une justification méthodologique adaptée.
+
+# 6. Définir une référence
+
+En régression, la catégorie de référence est le point de comparaison.
+
+```{r}
+#| eval: false
+df_analyse <- df_analyse |>
+  mutate(sexe = forcats::fct_relevel(sexe, "Femme"))
+
+levels(df_analyse$sexe)
+```
+
+# 7. La fiche de traçabilité
+
+Pour chaque variable recodée, documentez :
+
+| Variable | Transformation | Justification | Contrôle |
+|---|---|---|---|
+| `age` | 3 classes | lisibilité et effectifs suffisants | tableau avant/après |
+| `occup` | 3 groupes | statut vis-à-vis du marché du travail | modalités et NA |
+| `sexe` | référence explicite | interprétation du modèle | `levels()` |
+
+Cette fiche évite les recodages “magiques” dont on oublie la logique.
