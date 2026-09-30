@@ -1,0 +1,95 @@
+---
+title: "TD 0A — Diagnostiquer et préparer un fichier d’enquête"
+---
+
+# Objectif
+
+Ce TD porte uniquement sur la **prise en main et la préparation des données**. Aucun modèle statistique n’est demandé.
+
+Jeu utilisé : `questionr::hdv2003`.
+
+# Situation
+
+Vous recevez un fichier d’enquête déjà constitué. Avant toute analyse, votre responsable vous demande une note technique indiquant si le fichier peut être utilisé pour étudier les pratiques de loisirs.
+
+# Partie 1 — Comprendre le fichier
+
+1. Chargez `hdv2003` dans un objet `df_brut`.
+2. Donnez :
+   - le nombre de lignes ;
+   - le nombre de colonnes ;
+   - l’unité d’analyse ;
+   - les types R de `age`, `sexe`, `occup`, `nivetud`, `sport`, `cinema`, `heures.tv`.
+3. Utilisez `look_for()` pour retrouver les variables liées :
+   - au travail ;
+   - à la religion ;
+   - aux pratiques culturelles.
+4. Produisez un tableau du nombre et du pourcentage de valeurs manquantes pour les sept variables citées à la question 2.
+
+# Partie 2 — Contrôler les données
+
+5. Vérifiez si `id` est unique.
+6. Examinez la distribution de `age`.
+7. Examinez toutes les modalités de `occup` et `nivetud`.
+8. Identifiez les variables qui nécessiteront un recodage pour obtenir un tableau de synthèse lisible.
+
+# Partie 3 — Créer des variables d’analyse
+
+9. Créez `age_cat` :
+   - 18–29 ;
+   - 30–49 ;
+   - 50–64 ;
+   - 65+.
+
+10. Créez `tv_cat` :
+   - 0 h ;
+   - 1 h ;
+   - 2 h ;
+   - 3 h ou plus.
+
+11. Créez `occup_cat` :
+   - en emploi ;
+   - chômage ;
+   - études / foyer ;
+   - retraite / autre inactivité.
+
+12. Créez `etudes_cat` en trois groupes que vous devez **justifier**.
+
+# Partie 4 — Contrôler les recodages
+
+Pour chacune des quatre variables créées :
+
+13. produisez un tableau croisé avec la variable d’origine ;
+14. vérifiez les valeurs manquantes ;
+15. vérifiez les bornes ou les modalités ;
+16. rédigez une phrase justifiant le recodage.
+
+# Partie 5 — Construire le fichier final
+
+17. Construisez `df_loisirs` avec :
+   - `id`
+   - `age`
+   - `age_cat`
+   - `sexe`
+   - `occup_cat`
+   - `etudes_cat`
+   - `tv_cat`
+   - `sport`
+   - `cinema`
+   - `cuisine`
+   - `bricol`
+
+18. Comptez les observations complètes.
+19. Calculez le nombre et le pourcentage d’observations perdues si l’on exige des cas complets.
+20. Comparez l’âge moyen des cas complets et incomplets.
+
+# Livrable
+
+Rédigez une **note technique de 10 lignes** indiquant :
+
+- ce que représente une ligne ;
+- l’effectif initial ;
+- les principaux problèmes rencontrés ;
+- les recodages réalisés ;
+- la perte d’observations ;
+- une réserve méthodologique sur les cas complets.
