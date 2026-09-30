@@ -16,7 +16,7 @@ title: "2 — Préparer, nettoyer et recoder"
 - documenter les transformations ;
 - construire un **jeu d’analyse propre** à partir d’un fichier brut.
 
-# 1. Préparer les données = prendre des décisions
+# 1. Principes de préparation
 
 Le nettoyage n’est pas une opération neutre.
 
@@ -30,7 +30,7 @@ mais :
 
 > “Quelle transformation répond à ma question sans déformer inutilement l’information ?”
 
-# 2. Le workflow recommandé
+# 2. Séquence de préparation
 
 Nous allons toujours suivre la même séquence :
 
@@ -76,7 +76,7 @@ df_prepare <- df_brut |>
   )
 ```
 
-# 4. Sélectionner n’est pas supprimer “pour toujours”
+# 4. Sélection des variables
 
 `select()` permet de construire un sous-ensemble de colonnes.
 
@@ -102,7 +102,7 @@ df_brut |>
   select(contains("trav"))
 ```
 
-# 5. Renommer lorsque le nom gêne la lecture
+# 5. Renommage des variables
 
 ```{r}
 #| eval: false
@@ -115,7 +115,7 @@ df_prepare <- df_prepare |>
 
 Renommer ne doit pas faire perdre le lien avec le dictionnaire original. Dans un projet réel, gardez une trace des correspondances.
 
-# 6. Filtrer : toujours savoir qui sort de l’analyse
+# 6. Filtrage des observations
 
 Exemple :
 
@@ -290,9 +290,7 @@ Puis :
 table(df_prepare$heures_tv, df_prepare$tv_cat, useNA = "ifany")
 ```
 
-Pourquoi placer `TRUE ~ NA_character_` ?
-
-Parce qu’une valeur qui ne correspond à aucune règle ne doit pas être inventée silencieusement.
+Le dernier cas `TRUE ~ NA_character_` conserve comme manquantes les valeurs qui ne correspondent à aucune règle de recodage.
 
 # 12. Regrouper les modalités d’un facteur
 
@@ -380,7 +378,7 @@ Contrôle :
 table(df_prepare$occup, df_prepare$occup_cat, useNA = "ifany")
 ```
 
-# 14. Pourquoi les regroupements doivent-ils être justifiés ?
+# 14. Justification des regroupements
 
 Prenons l’occupation.
 
@@ -394,7 +392,7 @@ Le bon recodage dépend donc de la **question sociologique**.
 Il n’existe pas toujours un recodage “correct” indépendamment de la problématique. Il existe surtout des recodages plus ou moins cohérents, documentés et défendables.
 :::
 
-# 15. Les valeurs manquantes : ne pas choisir trop vite
+# 15. Traitement des valeurs manquantes
 
 Commençons par mesurer les manquants :
 
@@ -649,7 +647,7 @@ Calculez :
 2. combien d’observations sont perdues ;
 3. quelle limite cette suppression peut poser.
 
-# 22. Exercice “trouver l’erreur”
+# 22. Exercice 1 — Contrôle d’un recodage
 
 Voici un code :
 
@@ -668,7 +666,7 @@ df <- hdv2003 |>
 Questions :
 
 1. Que deviennent les `NA` de `age` ?
-2. Pourquoi est-ce un problème ?
+2. Quel problème ce code pose-t-il ?
 3. Corrigez le code.
 
 ## Correction de principe
@@ -690,9 +688,9 @@ df <- hdv2003 |>
   )
 ```
 
-Cet exemple montre pourquoi il faut réfléchir à l’ordre des conditions dans `case_when()`.
+L’ordre des conditions dans `case_when()` doit être contrôlé explicitement, en particulier lorsque des valeurs manquantes sont présentes.
 
-# 23. Exercice “recodage défendable ou non ?”
+# 23. Exercice 2 — Discussion des choix de recodage
 
 Pour chacune des propositions, dites si le recodage vous semble défendable et dans quel contexte.
 
@@ -741,7 +739,7 @@ Il est préférable de construire d’abord un jeu propre, puis de produire les 
 
 Conserver `age` en plus de `age_cat` permet de contrôler le recodage et de revenir en arrière.
 
-# 25. Checklist de fin de préparation
+# 25. Contrôle de fin de préparation
 
 Avant de passer au descriptif, vérifiez :
 
