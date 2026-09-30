@@ -1,0 +1,86 @@
+---
+title: "7 — De l’analyse à la note de conseil"
+---
+
+# La commande
+
+Dans un contexte professionnel, le commanditaire ne demande presque jamais “faites une régression logistique”. Il demande par exemple :
+
+> Quels publics sont les plus concernés par cette pratique et quels leviers semblent associés à son adoption ?
+
+Votre travail est de transformer cette question en stratégie d’analyse.
+
+# 1. Reformuler
+
+Écrire en une phrase :
+
+- la population ;
+- le phénomène étudié ;
+- les comparaisons importantes ;
+- la finalité de la décision.
+
+# 2. Construire un plan d’analyse
+
+Exemple :
+
+1. contrôle des données ;
+2. définition de l’indicateur principal ;
+3. descriptif de la population ;
+4. comparaison des groupes ;
+5. modèle multivarié ;
+6. visualisation des résultats ;
+7. limites ;
+8. recommandations de collecte ou d’analyse complémentaire.
+
+# 3. Séparer résultat et interprétation
+
+**Résultat statistique :** “La probabilité prédite est plus élevée dans le groupe A que dans le groupe B, toutes choses égales par ailleurs dans le modèle.”
+
+**Interprétation :** “Ce gradient peut être compatible avec …”
+
+**Limite :** “L’enquête transversale ne permet pas d’établir que X cause Y.”
+
+# 4. Format de restitution recommandé
+
+Une note courte peut suivre ce plan :
+
+## Question
+
+Deux à quatre phrases de contexte.
+
+## Données et méthode
+
+Population, effectif, variables, traitement des manquants, méthode.
+
+## Trois résultats à retenir
+
+Un tableau ou graphique par idée principale.
+
+## Interprétation
+
+Ce que les résultats suggèrent, sans dépasser ce qu’ils permettent.
+
+## Limites
+
+Sélection, mesure, causalité, représentativité, catégories rares.
+
+## Implications pour l’action
+
+Des conséquences opérationnelles directement reliées aux résultats et aux limites.
+
+# 5. Exigence de reproductibilité
+
+La note n’est que la partie visible. Elle doit être accompagnée d’un script capable de reconstruire chaque résultat présenté.
+
+# Mini-projet final
+
+Choisissez l’un des jeux étudiés dans le cours. Produisez :
+
+- un fichier `.qmd` de 2 pages maximum ;
+- un script ou des chunks entièrement reproductibles ;
+- un tableau descriptif ;
+- un modèle ou une ACM ;
+- un graphique ;
+- trois conclusions et deux limites.
+
+Le critère principal n’est pas le nombre de techniques utilisées, mais la cohérence entre question, données, méthode et conclusion.
