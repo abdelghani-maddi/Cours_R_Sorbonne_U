@@ -31,6 +31,13 @@ book:
         - corriges/04-housing-satisfaction.qmd
         - corriges/05-gssvocab.qmd
         - corriges/06-biofam.qmd
+    - part: "Évaluation"
+      chapters:
+        - evaluation/examen-blanc.qmd
+        - evaluation/bareme.qmd
+    - part: "Annexes"
+      chapters:
+        - annexes/migration-ancien-contenu.qmd
 
 format:
   html:
