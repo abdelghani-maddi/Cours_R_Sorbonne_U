@@ -70,7 +70,7 @@ diagnostic_na <- df_brut |>
 diagnostic_na
 ```
 
-**Lecture attendue :** on identifie quelles variables risquent de réduire fortement l’effectif d’analyse.
+**Interprétation :** on identifie quelles variables risquent de réduire fortement l’effectif d’analyse.
 
 # 5. Unicité de l’identifiant
 
@@ -289,7 +289,7 @@ tibble(
 )
 ```
 
-# 14. Les cas incomplets sont-ils différents ?
+# 14. Comparaison des cas complets et incomplets
 
 ```{r}
 #| eval: false
@@ -304,7 +304,7 @@ df_loisirs |>
 
 Ce contrôle ne suffit pas pour diagnostiquer le mécanisme de non-réponse, mais il rappelle que supprimer des observations peut modifier la population analysée.
 
-# 15. Exemple de note technique
+# 15. Note technique
 
 Une bonne note peut suivre cette structure :
 
