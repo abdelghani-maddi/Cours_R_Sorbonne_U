@@ -4,6 +4,11 @@ title: "Bienvenue"
 
 # Présentation du cours
 
+## Travaux pratiques dans RStudio
+
+Pour s'exercer aux fonctions abordées en cours, commencer par les [10 exercices en code R](TP-R/10-exercices.R), puis consulter les [corrigés commentés](TP-R/10-corriges-commentes.R). Il suffit d'ouvrir les fichiers `.R` dans RStudio ; Quarto n'est pas nécessaire.
+
+
 Ce cours vous accompagne dans une **démarche complète d’analyse de données d’enquête**. La priorité est donnée au raisonnement sociologique : comprendre ce que représente une variable, faire des choix de préparation explicites, produire des résultats reproductibles et savoir les interpréter.
 
 ## Démarche générale
