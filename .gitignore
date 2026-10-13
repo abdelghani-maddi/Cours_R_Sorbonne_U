@@ -1,8 +1,7 @@
-.Rproj.user
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-MCA_var_plot.png
 .DS_Store
-Nina.R
-nombres_par_type.xlsx
+travaux/
+resultats/
